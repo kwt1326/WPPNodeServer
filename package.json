@@ -1,0 +1,44 @@
+{
+  "name": "myhomepage",
+  "version": "1.0.0",
+  "description": "homepage and board by Kwt",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev:server": "nodemon app.js",
+    "dev:client": "cd ../WPPReactClient && npm start",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kwt1326/WebPortfolio.git"
+  },
+  "author": "wontae Kim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kwt1326/WebPortfolio/issues"
+  },
+  "homepage": "https://github.com/kwt1326/WebPortfolio#readme",
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  },
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.19.0",
+    "concurrently": "^4.1.2",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.4",
+    "dotenv": "^8.1.0",
+    "ejs": "^2.6.2",
+    "express": "^4.17.1",
+    "express-session": "^1.16.2",
+    "http-proxy-middleware": "^0.19.1",
+    "morgan": "^1.9.1",
+    "multer": "^1.4.2",
+    "mysql2": "^1.6.5",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "sequelize": "^5.16.0"
+  }
+}
