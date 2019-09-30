@@ -17,8 +17,8 @@ require('dotenv').config();
 
 // Redis db
 const redis = require('redis');
-const redisclient = redis.createClient(process.env.PORT_REDIS, process.env.HOST_REDIS);
 const redisstore = require('connect-redis')(session); // dependency to session
+const redisclient = redis.createClient(process.env.PORT_REDIS, process.env.HOST_REDIS);
 
 redisclient.auth(process.env.PW_REDIS, err => { throw err; })
 redisclient.on('error', err => { console.log('Redis ERR : ' + err); })
@@ -43,6 +43,7 @@ app.use(session({
         secure : false,
     },
     store : new redisstore({
+        client : redisclient,
         host : process.env.HOST_REDIS,
         port : process.env.PORT_REDIS,
         pass : process.env.PW_REDIS,
