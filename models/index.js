@@ -1,12 +1,20 @@
 
 const Sequelize = require('sequelize');
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
+//const env = process.env.NODE_ENV || 'development';
+//const config = require(__dirname + '/../config/config.json')[env];
 const db = {};
 
+//const sequelize = new Sequelize(
+//  config.database, config.username, config.password, config
+//  );
+
+const options = {
+  dialect : process.env.DIALECT_CDB
+}
+
 const sequelize = new Sequelize(
-  config.database, config.username, config.password, config
-  );
+  process.env.DBNAME_CDB, process.env.USER_CDB, process.env.PW_CDB, options
+)
 
 // db 객체의 내부 변수가 복수형이 아닌 이유 : 시퀄라이즈에서 지원하는 메소드 명이 복수형으로 사용되기 때문 
 // ex) const file = await post.find({where : {id : id}});
