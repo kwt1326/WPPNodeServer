@@ -8,13 +8,20 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const sequelize = require('./models').sequelize;
 const passport = require('passport');
-const redisstore = require('connect-redis')(session); // dependency to session
 
 // DB Sync
 sequelize.sync();
 
 // env parser
 require('dotenv').config();
+
+// Redis db
+const redis = require('redis');
+const redisclient = redis.createClient(process.env.PORT_REDIS, process.env.HOST_REDIS);
+const redisstore = require('connect-redis')(session); // dependency to session
+
+redisclient.auth(process.env.PW_REDIS, err => { throw err; })
+redisclient.on('error', err => { console.log('Redis ERR : ' + err); })
 
 // template engine
 app.set('views', path.join(__dirname, 'views'));
