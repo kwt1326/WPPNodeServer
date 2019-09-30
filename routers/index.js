@@ -12,7 +12,6 @@ const post = require('./post/index');
 
 router.get('/', function(req,res) {
     console.log("Express Router Index");
-    res.render('index', { title: 'Express' })
 });
 
 router.use('/main', main);
