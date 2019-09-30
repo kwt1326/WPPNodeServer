@@ -8,6 +8,7 @@ const db = {};
 //  config.database, config.username, config.password, config
 //  );
 
+console.log(process.env.HOSTING_CDB);
 const options = {
   host : process.env.HOSTING_CDB,
   password : process.env.PW_CDB,
@@ -15,8 +16,11 @@ const options = {
 }
 
 const sequelize = new Sequelize(
-  process.env.DBNAME_CDB, process.env.USER_CDB, options
-)
+  process.env.DBNAME_CDB, process.env.USER_CDB, process.env.PW_CDB, {
+    host : process.env.HOSTING_CDB,
+    dialect : 'mysql'
+  }
+);
 
 // db 객체의 내부 변수가 복수형이 아닌 이유 : 시퀄라이즈에서 지원하는 메소드 명이 복수형으로 사용되기 때문 
 // ex) const file = await post.find({where : {id : id}});
