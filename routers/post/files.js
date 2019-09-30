@@ -7,7 +7,7 @@ const { isLogined } = require('../passport/checklogin');
 
 fs.readdir('./public/images', (err) => {
     if(err) {
-        fs.mkdirSync('./public/images');
+        fs.mkdir('./public/images', {recursive: true}, err => {})
     }
 })
 
