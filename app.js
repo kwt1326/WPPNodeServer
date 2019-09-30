@@ -20,8 +20,8 @@ const redis = require('redis');
 const redisstore = require('connect-redis')(session); // dependency to session
 const redisclient = redis.createClient(process.env.PORT_REDIS, process.env.HOST_REDIS);
 
-redisclient.auth(process.env.PW_REDIS, err => { console.log(err); })
-redisclient.on('error', err => { console.log('Redis ERR : ' + err); })
+redisclient.auth(process.env.PW_REDIS, err => { throw err; })
+redisclient.on('error', err => { throw err; })
 
 // template engine
 app.set('views', path.join(__dirname, 'views'));
