@@ -2,12 +2,6 @@
 const Sequelize = require('sequelize');
 const db = {};
 
-const options = {
-  host : process.env.HOSTING_CDB,
-  password : process.env.PW_CDB,
-  dialect : 'mysql'
-}
-
 const sequelize = new Sequelize(
   process.env.DBNAME_CDB, process.env.USER_CDB, process.env.PW_CDB, {
     host : process.env.HOSTING_CDB,
