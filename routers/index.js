@@ -12,7 +12,7 @@ const post = require('./post/index');
 
 router.get('/', function(req,res) {
     console.log("Express Router Index");
-    res.send("<h1>Hello this is aquaclub api</h1>")
+    res.render('index', { title: 'Express' })
 });
 
 router.use('/main', main);
