@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kwt1326/WebPortfolio.git"
+    "url": "git+https://github.com/kwt1326/WPPNodeServer.git"
   },
   "author": "wontae Kim",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/kwt1326/WebPortfolio/issues"
+    "url": "https://github.com/kwt1326/WPPNodeServer/issues"
   },
-  "homepage": "https://github.com/kwt1326/WebPortfolio#readme",
+  "homepage": "https://github.com/kwt1326/WPPNodeServer#readme",
   "devDependencies": {
     "nodemon": "^1.19.1"
   },
