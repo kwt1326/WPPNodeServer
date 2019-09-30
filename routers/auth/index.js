@@ -13,7 +13,7 @@ router.get('/', isLogined, function(req,res,next) {
 
 // local login
 router.post('/login', passport.authenticate('local-login', {
-    failureRedirect: 'http://localhost:3000/login',
+    failureRedirect: process.env.CLIENT_PATH + 'login',
     successFlash: 'Welcome!',
     failureFlash: 'Fail login!',
     failureFlash: true
@@ -33,13 +33,13 @@ router.post('/login', passport.authenticate('local-login', {
                     if(post) // if during post auth, prev post load for after login success. 
                     {
                         res.redirect(url.format({
-                            pathname : 'http://localhost:3000/' + redirect,
+                            pathname : process.env.CLIENT_PATH + redirect,
                             query : { "post" : post }
                         }));  
                     }
                     else {
                         console.log('Redirect To : ' + redirect);
-                        res.redirect('http://localhost:3000/' + redirect);  
+                        res.redirect(process.env.CLIENT_PATH + redirect);  
                     }
                 });
             };
@@ -52,7 +52,7 @@ router.get('/logout', isLogined, (req, res) => {
     req.logOut();
     req.session.destroy();
     //res.send({ redirect : '/' });
-    res.redirect('http://localhost:3000/');  
+    res.redirect(process.env.CLIENT_PATH);  
     return;
 });
 

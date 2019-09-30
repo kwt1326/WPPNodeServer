@@ -8,6 +8,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const sequelize = require('./models').sequelize;
 const passport = require('passport');
+const redisstore = require('connect-redis')(session); // dependency to session
 
 // DB Sync
 sequelize.sync();
@@ -33,7 +34,13 @@ app.use(session({
     cookie : {
         httpOnly : true,
         secure : false,
-    }
+    },
+    store : new redisstore({
+        host : process.env.HOST_REDIS,
+        port : process.env.PORT_REDIS,
+        pass : process.env.PW_REDIS,
+        logErrors : true,
+    }),
 }))
 
 // flash message

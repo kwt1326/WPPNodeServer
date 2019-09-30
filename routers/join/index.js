@@ -9,7 +9,7 @@ const user = require('../../models/index').user;
 const router = express.Router(); // INDEX ROUTER
 
 router.get('/', function(req, res) {
-    res.render('join.ejs', {result : ''});
+    //res.render('join.ejs', {result : ''});
 });
 
 router.post('/', async (req, res) => {
@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
             const exist_user = await user.findOne({ where : {email} });
             if(exist_user) {
                 req.flash('Already joined user');
-                res.redirect('/');
+                //res.redirect('/');
             }
             else {
                 await bcrypt.hash(password, null, null, async (err, hash) =>
@@ -44,7 +44,7 @@ router.post('/', async (req, res) => {
                         }
                         else {
                             console.log('Inputed infos Not Compared');
-                            res.redirect('/join');
+                            //res.redirect('/join');
                         }    
                     }
                     catch (err) {
