@@ -26,7 +26,13 @@ let redisclient = redis.createClient({
 })
 redisclient.unref();
 redisclient.on('error', console.log);
-let store = new redisstore({ redisclient });
+let store = new redisstore({ 
+    client : redisclient,
+    host : process.env.HOST_REDIS,
+    port : process.env.PORT_REDIS,
+    pass : process.env.PW_REDIS,
+    logErrors : true,
+});
 
 // template engine
 app.set('views', path.join(__dirname, 'views'));
