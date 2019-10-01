@@ -16,7 +16,11 @@ sequelize.sync();
 require('dotenv').config();
 
 // Redis db
+const redis = require("redis");
+const redisClient = redis.createClient(process.env.PORT_REDIS, process.env.HOST_REDIS, {no_ready_check: true});
 const redisstore = require('connect-redis')(session); // dependency to session
+
+redisClient.auth(process.env.PW_REDIS, (err) => {throw err;});
 
 // template engine
 app.set('views', path.join(__dirname, 'views'));
@@ -38,7 +42,7 @@ app.use(session({
         secure : false,
     },
     store : new redisstore({
-        url : process.env.REDISCLOUD_URL
+        client : redisClient,
     }),
 }))
 
