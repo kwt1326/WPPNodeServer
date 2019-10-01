@@ -10,7 +10,13 @@ const user = require('./user/index');
 const post = require('./post/index');
 
 
-router.get('/', function(req,res) {
+router.get('/', function(err,req,res) {
+    if(err) {
+        console.log("Express Router ERROR : INDEX =>" + err);    
+        const error = new Error("Express Router ERROR : INDEX =>" + err);
+        error.status = 404;
+        next(error);    
+    }
     console.log("Express Router Index");
 });
 
