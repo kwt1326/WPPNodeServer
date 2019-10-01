@@ -22,7 +22,7 @@ let redisclient = redis.createClient({
     host : process.env.HOST_REDIS,
     port : process.env.PORT_REDIS,
     password : process.env.PW_REDIS,
-    db : 1
+    db : 0
 })
 redisclient.unref();
 redisclient.on('error', console.log);
