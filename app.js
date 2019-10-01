@@ -22,7 +22,6 @@ let redisclient = (process.env.NODE_ENV === "production") ? redis.createClient({
     host : process.env.HOST_REDIS,
     port : process.env.PORT_REDIS,
     password : process.env.PW_REDIS,
-    db : 0
 }) : null;
 
 if(process.env.NODE_ENV === "production") {
