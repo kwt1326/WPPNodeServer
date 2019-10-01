@@ -70,22 +70,33 @@ router.post('/', isLogined, function(req, res, next)
     const id = req.session.passport.user;
 
     const process = async () => {
-        return await db_post.create({
-            title : title,
-            usehide : usehide,
-            password : password,
-            content : content,
-            category : category,
-            userId : id,
-            guid : guid
-        })
-        .then(result => {
-            res.send({ result: result });
-        })
-        .catch(err => {
-            console.log("error");
-            next(err);
-        });    
+        return await db_user.findOne({ where: id })
+            .then((find_user) => {
+                async function applypost() {
+                    return await db_post.create({
+                        title: title,
+                        usehide: usehide,
+                        password: password,
+                        content: content,
+                        category: category,
+                        userId: id,
+                        guid: guid,
+                        nickname : find_user.nickname,
+                    })
+                    .then(result => {
+                        res.send({ result: result });
+                    })
+                    .catch(err => {
+                        console.log("error");
+                        next(err);
+                    });
+                }
+                return applypost();
+            })
+            .catch((err) => {
+                console.log("invalid writer");
+                next(err);
+            })
     }
 
     if(title !== undefined &&
@@ -147,9 +158,10 @@ router.delete('/', isLogined, function(req, res, next)
 // other 0. post list (get)
 router.get('/list', function(req,res,next) 
 {
+    const category = req.query.category;
     const process = async () => {
         return await db_post.findAndCountAll({
-            where : { [op.or]: [{category: 'default'}, {category: '오픈'}]},
+            where : { category: category },
         })
         .then(result => {
             res.send({ 

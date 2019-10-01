@@ -2,12 +2,16 @@
 const Sequelize = require('sequelize');
 const db = {};
 
-const sequelize = new Sequelize(
+const sequelize = (process.env.NODE_ENV === "production") ? new Sequelize(
   process.env.DBNAME_CDB, process.env.USER_CDB, process.env.PW_CDB, {
     host : process.env.HOSTING_CDB,
     dialect : 'mysql'
   }
-);
+) : 
+new Sequelize("web_kwt", "root", "1234", { // local test
+  host : "127.0.0.1",
+  dialect : 'mysql'
+});
 
 // db 객체의 내부 변수가 복수형이 아닌 이유 : 시퀄라이즈에서 지원하는 메소드 명이 복수형으로 사용되기 때문 
 // ex) const file = await post.find({where : {id : id}});

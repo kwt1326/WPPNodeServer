@@ -23,7 +23,10 @@ router.get('/', isLogined, function (req, res, next)
             console.log(response);
             res.send({ data : response.comments });
         })
-        .catch(err => {console.log('Not Found Parent Post : ' + guid + err)})
+        .catch(err => {
+            console.log('Not Found Parent Post : ' + guid + err)
+            res.send({ data : 'none' });
+        })
     }
 
     if(guid !== undefined && guid !== null)

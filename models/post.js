@@ -40,6 +40,10 @@ module.exports = (sequelize, DataTypes) => (
             type : DataTypes.INTEGER(),
             allowNull : false,
             defaultValue : 0,
+        },
+        nickname : {
+            type : DataTypes.STRING(40),
+            allowNull : false,
         }
     },
     {

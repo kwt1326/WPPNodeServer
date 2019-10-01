@@ -16,23 +16,27 @@ sequelize.sync();
 require('dotenv').config();
 
 // Redis db
-const redis = require('redis')
+const redis = require('redis');
 let redisstore = require('connect-redis')(session); // dependency to session
-let redisclient = redis.createClient({
+let redisclient = (process.env.NODE_ENV === "production") ? redis.createClient({
     host : process.env.HOST_REDIS,
     port : process.env.PORT_REDIS,
     password : process.env.PW_REDIS,
     db : 0
-})
-redisclient.unref();
-redisclient.on('error', console.log);
-let store = new redisstore({ 
+}) : null;
+
+if(process.env.NODE_ENV === "production") {
+    redisclient.unref();
+    redisclient.on('error', console.log);
+}
+
+let store = (process.env.NODE_ENV === "production") ? new redisstore({ 
     client : redisclient,
     host : process.env.HOST_REDIS,
     port : process.env.PORT_REDIS,
     pass : process.env.PW_REDIS,
     logErrors : true,
-});
+}) : null;
 
 // template engine
 app.set('views', path.join(__dirname, 'views'));
@@ -44,16 +48,16 @@ app.use(express.json()); // built in body-parser (after v4.16.0)
 app.use(express.static(path.join(__dirname, 'public'))); // resource main save place
 app.use(express.static(path.join(__dirname, 'public/images'))); // resource main save place
 app.use(express.urlencoded({extended : false}));
-app.use(cookieparser(process.env.COOKIE_SECRET));
+app.use(cookieparser((process.env.NODE_ENV === "production") ? process.env.COOKIE_SECRET : "localsecret"));
 app.use(session({
     resave : false,
     saveUninitialized : false,
-    secret : process.env.COOKIE_SECRET,
+    secret : (process.env.NODE_ENV === "production") ? process.env.COOKIE_SECRET : "localsecret",
     cookie : {
         httpOnly : true,
         secure : false,
     },
-    store : store,
+    store : (process.env.NODE_ENV === "production") ? store : undefined,
 }))
 
 // flash message
@@ -77,7 +81,7 @@ passport_module(passport);
 
 app.use('/api', router);
 app.use((req, res, next) => {
-    const err = new Error('Not found');
+    const err = new Error('Not found from app');
     err.status = 404;
     next(err);
 });
@@ -95,8 +99,9 @@ app.use(function(err, req, res, next) {
   
 
 // server start
-app.listen(process.env.PORT, () => {
-    console.log('[' + process.env.PORT + '] 번 포트에서 대기 중');
+let port = (process.env.NODE_ENV === "production") ? process.env.PORT : '3500';
+app.listen(port, () => {
+    console.log('[' + port + '] 번 포트에서 대기 중');
 })
   
 module.exports = app;
