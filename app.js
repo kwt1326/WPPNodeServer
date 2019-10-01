@@ -16,9 +16,13 @@ sequelize.sync();
 require('dotenv').config();
 
 // Redis db
-const redis = require('./node_modules/redis');
+const redis = require('redis');
 const redisstore = require('connect-redis')(session); // dependency to session
-const redisclient = redis.createClient(process.env.PORT_REDIS, process.env.HOST_REDIS);
+const redisclient = redis.createClient({
+    host : process.env.HOST_REDIS,
+    port : process.env.PORT_REDIS, 
+    password : process.env.PW_REDIS
+});
 
 //redisclient.auth(process.env.PW_REDIS, err => { throw err; })
 //redisclient.on('error', err => { throw err; })
@@ -44,10 +48,7 @@ app.use(session({
     },
     store : new redisstore({
         client : redisclient,
-        // host : process.env.HOST_REDIS,
-        // port : process.env.PORT_REDIS,
-        // pass : process.env.PW_REDIS,
-        // logErrors : true,
+        logErrors : true,
     }),
 }))
 
