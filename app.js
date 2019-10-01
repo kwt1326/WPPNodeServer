@@ -8,6 +8,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const sequelize = require('./models').sequelize;
 const passport = require('passport');
+const cors = require('cors');
 
 // DB Sync
 sequelize.sync();
@@ -67,11 +68,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // CORS 
-app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*"); 
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept"); 
-    next();
-});
+app.use(cors());
 
 // router
 const router = require('./routers/index');
@@ -79,6 +76,10 @@ const passport_module = require('./routers/passport/index');
 passport_module(passport);
 
 app.use('/api', router);
+app.get('/', function (req, res) {
+    res.render('main', {title : "app main"});
+});
+
 app.use((req, res, next) => {
     const err = new Error('Not found from app');
     err.status = 404;

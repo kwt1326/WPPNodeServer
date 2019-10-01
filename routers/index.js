@@ -5,17 +5,15 @@ const path = require('path');
 const router = express.Router(); // INDEX ROUTER
 const join = require('./join/index');
 const auth = require('./auth/index');
-const main = require('./main/index');
 const user = require('./user/index');
 const post = require('./post/index');
 
 
-router.get('/', function(err,req,res) {
-    res.send({ msg : "Express World" });
+router.get('/', function(req,res) {
+    res.render('main', { title : "Index Page"})
     console.log("Express Router Index");
 });
 
-router.use('/main', main);
 router.use('/join', join);
 router.use('/auth', auth);
 router.use('/user', user);
