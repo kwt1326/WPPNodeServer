@@ -16,7 +16,7 @@ sequelize.sync();
 require('dotenv').config();
 
 // Redis db
-const redis = require('redis');
+const redis = require('./node_modules/redis');
 const redisstore = require('connect-redis')(session); // dependency to session
 const redisclient = redis.createClient(process.env.PORT_REDIS, process.env.HOST_REDIS);
 
