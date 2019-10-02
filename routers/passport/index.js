@@ -39,7 +39,6 @@ module.exports = (passport) => {
                 if (exist_user) {
                     const result = await bcrypt.compareSync(password, exist_user.password);
                     if (result) {
-                        console.log(req.session);
                         console.log('Success login');
                         return done(null, exist_user);
                     }
