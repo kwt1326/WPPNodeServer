@@ -4,8 +4,8 @@ const bcrypt = require('bcrypt-nodejs');
 const Sequelize = require('sequelize');
 const op = Sequelize.Op;
 const db_user = require('../../models/index').user;
-const db_file = require('../../models/index').file;
 const db_post = require('../../models/index').post;
+const db_comment = require('../../models/index').cmt;
 
 const { isLogined } = require('../passport/checklogin');
 
@@ -22,35 +22,25 @@ router.get('/', isLogined, function (req, res, next)
     const id = req.session.passport.user;
 
     const process = async () => {
-        return await db_user.findOne({ where : id })
-        .then((find_user) => {
-            async function findpost() {
-                return await db_post.findOne({ where: { guid : guid }})
-                    .then(result => {
-                        res.send({
-                            content: result.content,
-                            createdAt: result.createdAt,
-                            updatedAt: result.updatedAt,
-                            category: result.category,
-                            userId: result.userId,
-                            title: result.title,
-                            id: result.id,
-                            writer: find_user.nickname,
-                            views : result.views,
-                            hearts : result.hearts,
-                        });
-                    })
-                    .catch(err => {
-                        console.log("Not found Post");
-                        next(err);
-                    });
-            }
-            return findpost();        
+        return await db_post.findOne({ where: { guid : guid }})
+        .then(result => {
+            res.send({
+                content: result.content,
+                createdAt: result.createdAt,
+                updatedAt: result.updatedAt,
+                category: result.category,
+                userId: result.userId,
+                title: result.title,
+                id: result.id,
+                writer: result.nickname,
+                views : result.views,
+                hearts : result.hearts,
+            });
         })
-        .catch((err) => {
-            console.log("invalid writer");
+        .catch(err => {
+            console.log("Not found Post");
             next(err);
-        })
+        });
     }
 
     if(guid !== undefined && guid !== null)
@@ -290,6 +280,58 @@ router.patch('/increase', isLogined, function (req, res, next)
         alert('invalid Value');
     }
 }) 
+
+// other 2. Post & Comment Read (GET)
+router.get('/reading', isLogined, function (req, res, next) 
+{
+    const guid = req.query.guid;
+    const process = async () => {
+        await db_post.findOne({ where: { guid : guid }})
+        .then(result => { // POST Find
+            return Promise.resolve({
+                post : {
+                    content: result.content,
+                    createdAt: result.createdAt,
+                    updatedAt: result.updatedAt,
+                    category: result.category,
+                    userId: result.userId,
+                    title: result.title,
+                    id: result.id,
+                    writer: result.nickname,
+                    views : result.views,
+                    hearts : result.hearts,
+                }
+            })
+        })
+        .catch(err => {
+            console.log("Not found Post");
+            res.status(404).send('Not found Data : Post');
+        })
+        .then(result_post => { // COMMENT Find
+            const process = async () => {
+                await db_post.findOne({ include: { model : db_comment, where : { postId : result_post.post.id } } })
+                .then(result_comment => {
+                    res.send({ 
+                        post : result_post.post,
+                        comment : result_comment
+                    });
+                })
+                .catch(err => {
+                    console.log('Not Found Parent Post : ' + guid + err)
+                    res.status(404).send('Not found Data : Comment');
+                })
+            }
+            process();
+        })
+        .catch(err => {
+            console.log("Not found Comment");
+            res.status(404).send('Not found Data : Comment');
+        })
+    }
+
+    if(guid !== undefined && guid !== null)
+        process();          
+});
 
 router.use('/files', file_r);
 router.use('/comment', comment_r);
