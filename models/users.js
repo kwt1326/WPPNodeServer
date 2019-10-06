@@ -26,10 +26,6 @@ module.exports = (sequelize, DataTypes) => (
             type : DataTypes.STRING(40),
             allowNull : true,
         },
-        numjoin : {
-            type : DataTypes.INTEGER(5),
-            allowNull : false,
-        },
         historys : {
             type : DataTypes.TEXT(),
             allowNull : true,
