@@ -1,5 +1,7 @@
-// local login strategy
+// passport strategis
 const passport_local = require('passport-local').Strategy;
+const passport_facebook = require('passport-facebook').Strategy;
+const passport_google = require('passport-google').Strategy;
 
 // crypt
 const bcrypt = require('bcrypt-nodejs');
@@ -11,7 +13,7 @@ module.exports = (passport) => {
 
     // session serialize
     passport.serializeUser(function (user, done) {
-        //console.log('passport session save : ', user);
+        //console.log('passport session save : ', user.id);
         done(null, user.id);
     });
 
@@ -23,7 +25,7 @@ module.exports = (passport) => {
     });
 
 
-    // login-local logic
+    // login-local
     passport.use('local-login', new passport_local({
         usernameField: 'email',     // input = email
         passwordField: 'password',  // input = password
@@ -55,4 +57,19 @@ module.exports = (passport) => {
             }
         }
     ));
+
+    // login-facebook
+    passport.use('facebook-login', new passport_facebook({
+        clientID: "FACEBOOK CLIENT ID",
+        clientSecret: "FACEBOOK SECRET",
+        callbackURL: "CALLBACK URL"
+    },
+
+        async (accessToken, refreshToken, profile, done) => {
+            //User.findOrCreate(..., function(err, user) {
+            //  if (err) { return done(err); }
+            //  done(null, user);
+            //});
+        }
+    ));    
 }

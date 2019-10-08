@@ -60,7 +60,7 @@ router.post('/', isLogined, function(req, res, next)
     const id = req.session.passport.user;
 
     const process = async () => {
-        return await db_user.findOne({ where: id })
+        return await db_user.findOne({ where: {id : id} })
             .then((find_user) => {
                 async function applypost() {
                     return await db_post.create({
@@ -177,7 +177,7 @@ router.patch('/increase', isLogined, function (req, res, next)
     const id = req.session.passport.user;
 
     const process = async () => {
-        return await db_user.findOne({ where: id })
+        return await db_user.findOne({ where: {id : id} })
         .then((find_user) => {
             async function dataUpdate() {
                 console.log("START HISTORY UPDATE : " + guid);

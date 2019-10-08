@@ -9,7 +9,7 @@ const router = express.Router(); // INDEX ROUTER
 router.get('/', isLogined, function (req, res, next) {
 
    const id = req.session.passport.user;
-   db_user.findOne({ where: id })
+   db_user.findOne({ where: {id : id} })
    .then(find_user => {
       res.send({
          email: find_user.email,
@@ -29,7 +29,7 @@ router.get('/history', isLogined, function (req, res, next)
    const type = req.query.type;
 
    const id = req.session.passport.user;
-   db_user.findOne({ where: id })
+   db_user.findOne({ where: {id : id} })
    .then(find_user => {
       if(guid !== undefined && type !== undefined) {
          const find_str = '!' + type + '$' + guid;

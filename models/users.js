@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => (
             type : DataTypes.STRING(40),
             allowNull : true,
         },
+        profileimg : {
+            type : DataTypes.TEXT(),
+            allowNull : true,
+        },
         historys : {
             type : DataTypes.TEXT(),
             allowNull : true,
