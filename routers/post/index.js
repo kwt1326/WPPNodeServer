@@ -149,16 +149,36 @@ router.delete('/', isLogined, function(req, res, next)
 router.get('/list', function(req,res,next) 
 {
     const category = req.query.category;
+    const page = req.query.page - 1;
+
     const process = async () => {
         return await db_post.findAndCountAll({
             where : { category: category },
         })
         .then(result => {
-            res.send({ 
-                result: true,
-                count : result.count,
-                rows : result.rows,
-             });
+            const result_rows = result.rows;
+            const rowleng = result_rows.length;
+            let rows = [];
+            let pageleng = (rowleng > 10) ? 10 : rowleng;
+            let ofs = rowleng - (page * 10) - 1;
+
+            async function extract () {
+                for(let i = 0; i < pageleng; i++) {
+                    rows[i] = result.rows[ofs - i];
+                }
+            }
+
+            async function sendrows() {
+                await extract();
+                res.send({ 
+                    result: true,
+                    ofs : ofs,
+                    count : rowleng,
+                    rows : rows,
+                 });
+            }
+
+            sendrows();
         })
         .catch(err => {
             console.log("error");
