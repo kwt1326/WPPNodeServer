@@ -14,7 +14,8 @@ router.get('/', isLogined, function (req, res, next) {
       res.send({
          email: find_user.email,
          nickname: find_user.nickname,
-         username: find_user.username
+         username: find_user.username,
+         profileimg : find_user.profileimg,
       });
    })
    .catch(err => {
@@ -70,14 +71,13 @@ router.get('/search', function (req,res,next)
 })
 
 // 1. user info update (일부분 갱신, patch 명령 사용)
-router.patch('/:email', isLogined, function(req, res, next) 
+router.patch('/', isLogined, function(req, res, next) 
 {
-   const new_email = req.query.email;
    const new_nickname = req.query.nickname;
    const new_username = req.query.username;
+   const new_img = req.query.profileimg;
 
-   if(new_email === undefined ||
-      new_nickname === undefined ||
+   if(new_nickname === undefined ||
       new_username === undefined) {
          alert("비어있는 값이 존재할 경우 변경이 불가능 합니다");
          return;
@@ -86,9 +86,9 @@ router.patch('/:email', isLogined, function(req, res, next)
    const id = req.session.passport.user;
 
    db_user.update({
-      email: new_email,
       nickname: new_nickname,
       username: new_username,
+      profileimg : (new_img) ? new_img : ""
    }, { where: { id: id } })
    .then(result => {
       res.send({ result: result });

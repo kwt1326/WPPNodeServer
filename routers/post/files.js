@@ -25,7 +25,7 @@ const uploadSetting = multer({
 });
 
 router.post('/', isLogined, uploadSetting.single('img'), (req,res) => {
-    console.log(req.file);
+    console.log("UPLOAD file : " + req.file);
     res.send({url : req.file.filename})
 })
 
