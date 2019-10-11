@@ -41,10 +41,10 @@ module.exports = (sequelize, DataTypes) => (
             allowNull : false,
             defaultValue : 0,
         },
-        nickname : {
-            type : DataTypes.STRING(40),
-            allowNull : false,
-        }
+        frontimg : {
+            type : DataTypes.STRING(100),
+            allowNull : true,
+        },
     },
     {
         timestamps : true,

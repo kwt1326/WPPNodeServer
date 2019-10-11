@@ -40,10 +40,12 @@ router.post('/', isLogined, function(req, res, next)
     const guid = req.query.guid;
     const content = req.query.content;
     const usehide = req.query.usehide;
+    const id = req.session.passport.user;
 
     const process = async () => {
-        return await db_comment.create({
+        await db_comment.create({
             guid : guid,
+            writer : parseInt(id),
             content : content,
             usehide : usehide,
             postId : postid,
@@ -53,11 +55,11 @@ router.post('/', isLogined, function(req, res, next)
         })
         .catch(err => {
             console.log("error");
-            next(err);
+            res.status(404).send('Not found Data : Comment');
         });    
     }
 
-    if(!content || !guid || !postid) {
+    if(!content || !guid || !postid || !id) {
         console.log("FAIL APPLY COMMENT");
         return;
     }

@@ -5,6 +5,10 @@ module.exports = (sequelize, DataTypes) => (
             allowNull : false,
             unique : true,
         },
+        writer : {
+            type : DataTypes.INTEGER(10),
+            allowNull : false,
+        },
         content : {
             type : DataTypes.TEXT(),
             allowNull : false,

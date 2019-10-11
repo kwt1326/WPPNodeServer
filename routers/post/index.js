@@ -32,7 +32,6 @@ router.get('/', isLogined, function (req, res, next)
                 userId: result.userId,
                 title: result.title,
                 id: result.id,
-                writer: result.nickname,
                 views : result.views,
                 hearts : result.hearts,
             });
@@ -60,33 +59,22 @@ router.post('/', isLogined, function(req, res, next)
     const id = req.session.passport.user;
 
     const process = async () => {
-        return await db_user.findOne({ where: {id : id} })
-            .then((find_user) => {
-                async function applypost() {
-                    return await db_post.create({
-                        title: title,
-                        usehide: usehide,
-                        password: password,
-                        content: content,
-                        category: category,
-                        userId: id,
-                        guid: guid,
-                        nickname : find_user.nickname,
-                    })
-                    .then(result => {
-                        res.send({ result: result });
-                    })
-                    .catch(err => {
-                        console.log("error");
-                        next(err);
-                    });
-                }
-                return applypost();
-            })
-            .catch((err) => {
-                console.log("invalid writer");
-                next(err);
-            })
+        return await db_post.create({
+            title: title,
+            usehide: usehide,
+            password: password,
+            content: content,
+            category: category,
+            userId: id,
+            guid: guid,
+        })
+        .then(result => {
+            res.send({ result: result });
+        })
+        .catch(err => {
+            console.log("error");
+            next(err);
+        });
     }
 
     if(title !== undefined &&
@@ -164,7 +152,13 @@ router.get('/list', function(req,res,next)
 
             async function extract () {
                 for(let i = 0; i < pageleng; i++) {
-                    rows[i] = result.rows[ofs - i];
+                    await db_user.findOne({ where: {id : result.rows[ofs - i].userId} })
+                    .then(res_user => {
+                        rows[i] = {
+                            content : result.rows[ofs - i],
+                            writer : res_user.nickname
+                        }
+                    })
                 }
             }
 
@@ -317,7 +311,6 @@ router.get('/reading', isLogined, function (req, res, next)
                     userId: result.userId,
                     title: result.title,
                     id: result.id,
-                    writer: result.nickname,
                     views : result.views,
                     hearts : result.hearts,
                 }
@@ -327,18 +320,61 @@ router.get('/reading', isLogined, function (req, res, next)
             console.log("Not found Post");
             res.status(404).send('Not found Data : Post');
         })
-        .then(result_post => { // COMMENT Find
-            const process = async () => {
+        .then(result_post => {
+
+            let nickname = "";
+
+            async function finduser () {
+                await db_user.findOne({where : {id : result_post.post.userId}})
+                .then(res_user => {
+                    nickname = res_user.nickname;
+                })    
+            }
+
+            finduser();
+
+            async function process () { // COMMENT Find
                 await db_post.findOne({ include: { model : db_comment, where : { postId : result_post.post.id } } })
                 .then(result_comment => {
-                    res.send({ 
-                        post : result_post.post,
-                        comment : result_comment
-                    });
+                    let comments = result_comment.comments;
+                    let expand = [];
+                    async function writersimg() {
+                        for(let i = 0 ; i < comments.length ; ++i) {
+                            if(comments[i].writer) {
+                                await db_user.findOne({where : {id : comments[i].writer}})
+                                .then(result_user => {
+                                    expand[i] = {
+                                        profileimg : result_user.profileimg,
+                                        nickname : result_user.nickname
+                                    }
+                                })
+                            }
+                        }
+                    }
+                    writersimg()
+                    .then(result => {
+                        console.log("PART OF ERROR : " + result_comment.nickname);
+                        res.send({ 
+                            post : result_post.post,
+                            post_writer : nickname,
+                            comment : comments,
+                            comment_expands : expand
+                        })
+                    })
+                    .catch(err => {
+                        res.send({ 
+                            post : result_post.post,
+                            post_writer : nickname,
+                            comment : comments,
+                        })
+                    })
                 })
                 .catch(err => {
-                    console.log('Not Found Parent Post : ' + guid + err)
-                    res.status(404).send('Not found Data : Comment');
+                    console.log(nickname);
+                    res.send({ 
+                        post : result_post.post,
+                        post_writer : nickname,
+                    });
                 })
             }
             process();
