@@ -118,4 +118,81 @@ router.delete('/', isLogined, function(req, res, next)
     }
 });
 
+// other 1. increase comment Hearts (patch)
+router.patch('/increase', isLogined, function (req, res, next) 
+{
+    const guid = req.query.id;
+    const num = req.query.num;
+    const id = req.session.passport.user;
+
+    const process = async () => {
+        return await db_user.findOne({ where: {id : id} })
+        .then((find_user) => {
+            async function dataUpdate() {
+                console.log("START HISTORY UPDATE : " + guid);
+                return await db_comment.findOne({ where: { guid: guid } })
+                .then(result => {
+                    // HEARTS
+                    db_comment.update(
+                        { hearts: parseInt(result.hearts) + parseInt(num) },
+                        { where: { guid, guid } })
+                    .then((result) => 
+                    {
+                        // UPDATE USER HISTORY //
+                        if (find_user.historys === null || find_user.historys.indexOf('!heart$' + guid) === -1) {
+                            db_user.update({
+                                historys: find_user.historys + '!heart$' + guid,
+                            }, { where: { id: id } })
+                            .then(response => {
+                                console.log('heart history updated');
+                                res.send({ result: true });
+                            })
+                            .catch(err => {
+                                console.log("Can't update Comment (increase) : " + guid);
+                                res.status(404).send("Can't update Comment (increase) : " + err);
+                            });
+                        }
+                        else {
+                            if(parseInt(num) < 0) {
+                                const arr_split = find_user.historys.split('!heart$' + guid);
+                                db_user.update({
+                                    historys: arr_split.join(''),
+                                }, { where: { id: id } })
+                                .then(response => {
+                                    console.log('heart history Deleted (decrease)');
+                                    res.send({ result: true });
+                                })
+                                .catch(err => {
+                                    console.log("Can't update Comment (decrease) : " + guid);
+                                    res.status(404).send("Can't update Comment (decrease) : " + err);
+                                });    
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.log("Can't update comment : " + err);
+                        res.status(404).send(err);
+                    })
+                })
+                .catch(err => {
+                    console.log("Can't increase heart");
+                    res.status(404).send(err);
+                });
+            }
+            return dataUpdate();
+        })
+        .catch((err) => {
+            console.log("invalid writer");
+            res.status(404).send(err);
+        })
+    }
+
+    if(guid !== undefined && guid !== null &&
+        num !== undefined && num !== null)
+        process();
+    else {
+        alert('invalid Value');
+    }
+}) 
+
 module.exports = router;

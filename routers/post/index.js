@@ -234,7 +234,7 @@ router.patch('/increase', isLogined, function (req, res, next)
                             { hearts: parseInt(result.hearts) + parseInt(num) },
                             { where: { guid, guid } })
                         .then((result) => 
-                        {
+                        {                            
                             // UPDATE USER HISTORY //
                             if (find_user.historys === null || find_user.historys.indexOf('!heart$' + guid) === -1) {
                                 db_user.update({
@@ -299,6 +299,8 @@ router.patch('/increase', isLogined, function (req, res, next)
 router.get('/reading', isLogined, function (req, res, next) 
 {
     const guid = req.query.guid;
+    const userid = req.session.passport.user;
+
     const process = async () => {
         await db_post.findOne({ where: { guid : guid }})
         .then(result => { // POST Find
@@ -317,14 +319,15 @@ router.get('/reading', isLogined, function (req, res, next)
             })
         })
         .catch(err => {
-            console.log("Not found Post");
+            console.log("Not found Post : " + err);
             res.status(404).send('Not found Data : Post');
         })
+
         .then(result_post => {
 
             let nickname = "";
 
-            async function finduser () {
+            async function finduser () { // POST WRITER (닉네임 user 에서 변경시 작성 당시와 달라지기 때문에 따로 로드)))
                 await db_user.findOne({where : {id : result_post.post.userId}})
                 .then(res_user => {
                     nickname = res_user.nickname;
@@ -338,22 +341,24 @@ router.get('/reading', isLogined, function (req, res, next)
                 .then(result_comment => {
                     let comments = result_comment.comments;
                     let expand = [];
-                    async function writersimg() {
+
+                    // GET COMMENT expand info
+                    async function expandinfos() 
+                    {
                         for(let i = 0 ; i < comments.length ; ++i) {
-                            if(comments[i].writer) {
+                            if(comments[i]) {
                                 await db_user.findOne({where : {id : comments[i].writer}})
                                 .then(result_user => {
                                     expand[i] = {
                                         profileimg : result_user.profileimg,
-                                        nickname : result_user.nickname
+                                        nickname : result_user.nickname,
                                     }
-                                })
+                                });        
                             }
                         }
                     }
-                    writersimg()
+                    expandinfos()
                     .then(result => {
-                        console.log("PART OF ERROR : " + result_comment.nickname);
                         res.send({ 
                             post : result_post.post,
                             post_writer : nickname,
@@ -361,16 +366,8 @@ router.get('/reading', isLogined, function (req, res, next)
                             comment_expands : expand
                         })
                     })
-                    .catch(err => {
-                        res.send({ 
-                            post : result_post.post,
-                            post_writer : nickname,
-                            comment : comments,
-                        })
-                    })
                 })
-                .catch(err => {
-                    console.log(nickname);
+                .catch(err => { // NO COMMENTS
                     res.send({ 
                         post : result_post.post,
                         post_writer : nickname,
@@ -380,7 +377,7 @@ router.get('/reading', isLogined, function (req, res, next)
             process();
         })
         .catch(err => {
-            console.log("Not found Comment");
+            console.log("Not found Comment : " + err);
             res.status(404).send('Not found Data : Comment');
         })
     }

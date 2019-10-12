@@ -38,17 +38,17 @@ router.get('/history', isLogined, function (req, res, next)
             res.send({ result : true });
          }
          else {
-            res.send({ result : false });
+            res.send({result : false});
          }
       }
       else {
          console.log("because can't travel invalid value");
-         res.send({ result : false });
+         res.status(404).send('invalid value');
       }
    })
    .catch(err => {
       console.log(err);
-      next(err);
+      res.status(404).send('invalid user');
    });
 });
 
