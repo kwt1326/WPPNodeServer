@@ -34,6 +34,7 @@ router.get('/', isLogined, function (req, res, next)
                 id: result.id,
                 views : result.views,
                 hearts : result.hearts,
+                frontimg : result.frontimg
             });
         })
         .catch(err => {
@@ -54,6 +55,7 @@ router.post('/', isLogined, function(req, res, next)
     const usehide = req.query.usehide;
     const password = req.query.password;
     const category = req.query.category;
+    const frontimg = req.query.frontimg;
     const guid = req.query.guid;
 
     const id = req.session.passport.user;
@@ -67,6 +69,7 @@ router.post('/', isLogined, function(req, res, next)
             category: category,
             userId: id,
             guid: guid,
+            frontimg : frontimg
         })
         .then(result => {
             res.send({ result: result });
@@ -139,46 +142,54 @@ router.get('/list', function(req,res,next)
     const category = req.query.category;
     const page = req.query.page - 1;
 
-    const process = async () => {
-        return await db_post.findAndCountAll({
+    const process = async () => 
+    {
+        let row_count = 0;
+
+        await db_post.count({
             where : { category: category },
         })
-        .then(result => {
-            const result_rows = result.rows;
-            const rowleng = result_rows.length;
-            let rows = [];
-            let pageleng = (rowleng > 10) ? 10 : rowleng;
-            let ofs = rowleng - (page * 10) - 1;
+        .then(res => {
+            row_count = res;
+        })
 
-            async function extract () {
-                for(let i = 0; i < pageleng; i++) {
-                    await db_user.findOne({ where: {id : result.rows[ofs - i].userId} })
-                    .then(res_user => {
+        let rows = [];
+        let pageleng = (row_count > 10) ? 10 : row_count;
+        let ofs = row_count - (page * 10);
+
+        await db_post.findAll({
+            offset : ofs - pageleng,
+            limit : pageleng,
+            where : { category: category },
+            order: [['createdAt', 'DESC']],
+        })
+        .then(result => {
+            async function getrows () {
+                for(let i = 0 ; i < result.length ; ++i) {
+                    await db_user.findOne({ where: { id: result[i].userId } })
+                    .then(result_user => {
                         rows[i] = {
-                            content : result.rows[ofs - i],
-                            writer : res_user.nickname
+                            content: result[i],
+                            writer: result_user.nickname
                         }
                     })
-                }
+                }    
             }
 
-            async function sendrows() {
-                await extract();
-                res.send({ 
+            async function send () {
+                await getrows();
+                res.send({
                     result: true,
-                    ofs : ofs,
-                    count : rowleng,
-                    rows : rows,
-                 });
+                    ofs: ofs,
+                    count: row_count,
+                    rows: rows,
+                });        
             }
 
-            sendrows();
+            send();
         })
-        .catch(err => {
-            console.log("error");
-            next(err);
-        });    
     }
+
     process();
 })
 

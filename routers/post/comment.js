@@ -171,12 +171,12 @@ router.patch('/increase', isLogined, function (req, res, next)
                     })
                     .catch(err => {
                         console.log("Can't update comment : " + err);
-                        res.status(404).send(err);
+                        res.status(404).send("Can't update comment : " +err);
                     })
                 })
                 .catch(err => {
                     console.log("Can't increase heart");
-                    res.status(404).send(err);
+                    res.status(404).send("Can't increase heart : " + err);
                 });
             }
             return dataUpdate();
