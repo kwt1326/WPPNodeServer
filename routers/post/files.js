@@ -24,9 +24,15 @@ const uploadSetting = multer({
     limits : {fileSize : 5 * 1024 * 1024},
 });
 
-router.post('/', isLogined, uploadSetting.single('img'), (req,res) => {
+// Multer Error handling
+router.post('/', isLogined, uploadSetting.single('img'), (err, req, res, next) => {
+    if(err) { res.status(409).send("File Error : " + err); }
+})
+
+// Success upload
+router.post('/', isLogined, uploadSetting.single('img'), (req, res) => {
     console.log("UPLOAD file : " + req.file);
-    res.send({url : req.file.filename})
+    res.send({ url: req.file.filename })
 })
 
 router.delete('/', isLogined, (req,res) => {

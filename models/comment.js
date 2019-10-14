@@ -13,11 +13,6 @@ module.exports = (sequelize, DataTypes) => (
             type : DataTypes.TEXT(),
             allowNull : false,
         },
-        usehide : {
-            type : DataTypes.BOOLEAN(),
-            allowNull : false,
-            defaultValue : 0,
-        },
         hearts : {
             type : DataTypes.INTEGER(),
             allowNull : false,

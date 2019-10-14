@@ -98,6 +98,7 @@ router.patch('/', isLogined, function(req, res, next)
         category : req.query.category,
         password: req.query.password,
         usehide: req.query.usehide,
+        frontimg : req.query.frontimg,
         }, { where: { guid : guid } })
         .then(response => {
             console.log('post updated : ' + guid);
@@ -154,11 +155,11 @@ router.get('/list', function(req,res,next)
         })
 
         let rows = [];
-        let pageleng = (row_count > 10) ? 10 : row_count;
-        let ofs = row_count - (page * 10);
+        let ofs = page * 10;
+        let pageleng = 10;
 
         await db_post.findAll({
-            offset : ofs - pageleng,
+            offset : ofs,
             limit : pageleng,
             where : { category: category },
             order: [['createdAt', 'DESC']],
@@ -180,7 +181,7 @@ router.get('/list', function(req,res,next)
                 await getrows();
                 res.send({
                     result: true,
-                    ofs: ofs,
+                    ofs: row_count - (page * 10),
                     count: row_count,
                     rows: rows,
                 });        
@@ -217,9 +218,19 @@ router.patch('/increase', isLogined, function (req, res, next)
                         .then((result) => 
                         {
                             // UPDATE USER HISTORY //
-                            if(find_user.historys === null || find_user.historys.indexOf('!view$' + guid) === -1) { // Save only first view histroy
+                            let history = find_user.historys;
+                            let matched = history.match(/!view/g); 
+                            if (matched !== null) {
+                                if(matched.length > 5) { // 최근 view 기록 한도
+                                    const search_st = history.indexOf("!view$");
+                                    const removeword = history.substring(history.indexOf("!view$"),history.indexOf("!", search_st + 5));
+                                    history = history.replace(removeword, "");
+                                }   
+                            }
+
+                            if(history === null || history.indexOf('!view$' + guid) === -1) { // Save only first view histroy
                                 db_user.update({
-                                    historys: find_user.historys + '!view$' + guid,
+                                    historys: history + '!view$' + guid,
                                 }, { where: { id: id } })
                                 .then(response => {
                                     console.log('view history updated');
@@ -231,8 +242,19 @@ router.patch('/increase', isLogined, function (req, res, next)
                                 });
                             }
                             else {
-                                console.log('view history already updated');
-                                res.send({ result: false });
+                                // 기존 view 기록 지우고 뒤에 새로 붙임으로써 최근 기록 업데이트
+                                const repword = history.replace(("!view$" + String(guid)), "");
+                                db_user.update({
+                                    historys: repword + '!view$' + guid,
+                                }, { where: { id: id } })
+                                .then(response => {
+                                    console.log('view history updated (already updated)');
+                                    res.send({ result: true });
+                                })
+                                .catch(err => {
+                                    console.log("Can't update user view history : " + guid);
+                                    next(err);
+                                });
                             }
                         })
                         .catch(err => {
