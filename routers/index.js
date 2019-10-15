@@ -7,7 +7,7 @@ const join = require('./join/index');
 const auth = require('./auth/index');
 const user = require('./user/index');
 const post = require('./post/index');
-
+const tag  = require('./tag/index');
 
 router.get('/', function(req,res) {
     res.render('main', { title : "Index Page"})
@@ -18,5 +18,6 @@ router.use('/join', join);
 router.use('/auth', auth);
 router.use('/user', user);
 router.use('/post', post);
+router.use('/tag' , tag);
 
 module.exports = router;

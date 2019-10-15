@@ -33,6 +33,11 @@ module.exports = (sequelize, DataTypes) => (
         historys : {
             type : DataTypes.TEXT(),
             allowNull : true,
+        },
+        level : {
+            type : DataTypes.STRING(10),
+            allowNull : false,
+            defaultValue : 'user',
         }
     },
     {

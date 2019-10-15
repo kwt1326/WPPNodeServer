@@ -28,13 +28,12 @@ router.get('/', isLogined, function (req, res, next)
                 content: result.content,
                 createdAt: result.createdAt,
                 updatedAt: result.updatedAt,
-                category: result.category,
                 userId: result.userId,
                 title: result.title,
-                id: result.id,
                 views : result.views,
                 hearts : result.hearts,
-                frontimg : result.frontimg
+                frontimg : result.frontimg,
+                hashtag : result.hashtag,
             });
         })
         .catch(err => {
@@ -50,17 +49,33 @@ router.get('/', isLogined, function (req, res, next)
 // 2. Post Apply (POST)
 router.post('/', isLogined, function(req, res, next) 
 {
+    const id = req.session.passport.user;
+
+    const guid = req.query.guid;
     const title = req.query.title;
     const content = req.query.content;
     const usehide = req.query.usehide;
     const password = req.query.password;
-    const category = req.query.category;
     const frontimg = req.query.frontimg;
-    const guid = req.query.guid;
-
-    const id = req.session.passport.user;
+    const hashtags = req.query.hashtag;
+    let   category = req.query.category;
 
     const process = async () => {
+        await db_user.findOne({where : {id : id}})
+        .then(res => {
+            switch (res.level) {
+                case "user" : {
+                    category = "default"
+                    break;
+                }
+                case "admin" : {
+                    category = "tagged"
+                    break;
+                }
+            }
+            
+        })
+
         return await db_post.create({
             title: title,
             usehide: usehide,
@@ -68,6 +83,7 @@ router.post('/', isLogined, function(req, res, next)
             content: content,
             category: category,
             userId: id,
+            hashtag : hashtags,
             guid: guid,
             frontimg : frontimg
         })
@@ -80,9 +96,7 @@ router.post('/', isLogined, function(req, res, next)
         });
     }
 
-    if(title !== undefined &&
-       content !== undefined &&
-       category !== undefined)
+    if(guid && title && content)
         process();          
 });
 
@@ -90,15 +104,32 @@ router.post('/', isLogined, function(req, res, next)
 router.patch('/', isLogined, function(req, res, next) 
 {
     const guid = req.query.guid;
+    const id = req.session.passport.user;
 
     const process = async () => {
+        await db_user.findOne({where : {id : id}})
+        .then(res => {
+            switch (res.level) {
+                case "user" : {
+                    category = "default"
+                    break;
+                }
+                case "admin" : {
+                    category = "tagged"
+                    break;
+                }
+            }
+            
+        })
+
         return await db_post.update({
-        title: req.query.title,
-        content: req.query.content,
-        category : req.query.category,
-        password: req.query.password,
-        usehide: req.query.usehide,
-        frontimg : req.query.frontimg,
+            title: req.query.title,
+            content: req.query.content,
+            category : req.query.category,
+            password: req.query.password,
+            usehide: req.query.usehide,
+            frontimg : req.query.frontimg,
+            hashtag : req.query.hashtag
         }, { where: { guid : guid } })
         .then(response => {
             console.log('post updated : ' + guid);
@@ -319,12 +350,10 @@ router.patch('/increase', isLogined, function (req, res, next)
         })
     }
 
-    if(guid !== undefined && guid !== null &&
-        num !== undefined && num !== null &&
-        type !== undefined && type !== null)
+    if(guid && num && type)
         process();
     else {
-        alert('invalid Value');
+        res.status(404).send("invalid Value : " + err);
     }
 }) 
 
@@ -332,90 +361,67 @@ router.patch('/increase', isLogined, function (req, res, next)
 router.get('/reading', isLogined, function (req, res, next) 
 {
     const guid = req.query.guid;
-    const userid = req.session.passport.user;
-
-    const process = async () => {
-        await db_post.findOne({ where: { guid : guid }})
-        .then(result => { // POST Find
-            return Promise.resolve({
-                post : {
-                    content: result.content,
-                    createdAt: result.createdAt,
-                    updatedAt: result.updatedAt,
-                    category: result.category,
-                    userId: result.userId,
-                    title: result.title,
-                    id: result.id,
-                    views : result.views,
-                    hearts : result.hearts,
-                }
-            })
-        })
-        .catch(err => {
-            console.log("Not found Post : " + err);
-            res.status(404).send('Not found Data : Post');
-        })
-
-        .then(result_post => {
+    async function process () { // COMMENT Find
+        await db_post.findOne({ include: [{ model : db_comment }], where : { guid : guid } })
+        .then(results => {
 
             let nickname = "";
+            let comments = results.comments;
+            let expand = [];
 
             async function finduser () { // POST WRITER (닉네임 user 에서 변경시 작성 당시와 달라지기 때문에 따로 로드)))
-                await db_user.findOne({where : {id : result_post.post.userId}})
+                await db_user.findOne({where : {id : results.userId}})
                 .then(res_user => {
                     nickname = res_user.nickname;
                 })    
             }
-
-            finduser();
-
-            async function process () { // COMMENT Find
-                await db_post.findOne({ include: { model : db_comment, where : { postId : result_post.post.id } } })
-                .then(result_comment => {
-                    let comments = result_comment.comments;
-                    let expand = [];
-
-                    // GET COMMENT expand info
-                    async function expandinfos() 
-                    {
-                        for(let i = 0 ; i < comments.length ; ++i) {
-                            if(comments[i]) {
-                                await db_user.findOne({where : {id : comments[i].writer}})
-                                .then(result_user => {
-                                    expand[i] = {
-                                        profileimg : result_user.profileimg,
-                                        nickname : result_user.nickname,
-                                    }
-                                });        
+    
+            // GET COMMENT expand info
+            async function expandinfos() 
+            {
+                for(let i = 0 ; i < comments.length ; ++i) {
+                    if(comments[i]) {
+                        await db_user.findOne({where : {id : comments[i].writer}})
+                        .then(result_user => {
+                            expand[i] = {
+                                profileimg : result_user.profileimg,
+                                nickname : result_user.nickname,
                             }
-                        }
+                        });        
                     }
-                    expandinfos()
-                    .then(result => {
-                        res.send({ 
-                            post : result_post.post,
-                            post_writer : nickname,
-                            comment : comments,
-                            comment_expands : expand
-                        })
-                    })
-                })
-                .catch(err => { // NO COMMENTS
-                    res.send({ 
-                        post : result_post.post,
-                        post_writer : nickname,
-                    });
-                })
+                }
             }
-            process();
-        })
-        .catch(err => {
-            console.log("Not found Comment : " + err);
-            res.status(404).send('Not found Data : Comment');
-        })
-    }
 
-    if(guid !== undefined && guid !== null)
+            async function createinfo () {
+                await finduser();
+                expandinfos()
+                .then(result => {
+                    res.send({ 
+                        post : {
+                            content: results.content,
+                            createdAt: results.createdAt,
+                            updatedAt: results.updatedAt,
+                            category: results.category,
+                            userId: results.userId,
+                            title: results.title,
+                            views: results.views,
+                            hearts: results.hearts,
+                        },
+                        post_writer : nickname,
+                        comment : comments,
+                        comment_expands : expand
+                    })
+                })    
+            }
+
+            createinfo();
+        })
+        .catch(err => { // NO COMMENTS
+            res.status(404).send("Not Found Post : " + err);
+        })
+    }    
+
+    if(guid)
         process();          
 });
 
