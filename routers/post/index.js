@@ -34,6 +34,7 @@ router.get('/', isLogined, function (req, res, next)
                 hearts : result.hearts,
                 frontimg : result.frontimg,
                 hashtag : result.hashtag,
+                id : result.id,
             });
         })
         .catch(err => {
@@ -69,7 +70,8 @@ router.post('/', isLogined, function(req, res, next)
                     break;
                 }
                 case "admin" : {
-                    category = "tagged"
+                    if(hashtags)
+                        category = "tagged"
                     break;
                 }
             }
@@ -171,15 +173,23 @@ router.delete('/', isLogined, function(req, res, next)
 // other 0. post list (get)
 router.get('/list', function(req,res,next) 
 {
-    const category = req.query.category;
+    const search = req.query.search;
+    const category = (search === "board") ? "default" : "tagged";
     const page = req.query.page - 1;
+    const where = { category: category };
+
+    if(search !== "board") {
+        where['hashtag'] = {
+            [op.like]: "%" + search + "%"
+        }
+    }
 
     const process = async () => 
     {
         let row_count = 0;
 
         await db_post.count({
-            where : { category: category },
+            where : where,
         })
         .then(res => {
             row_count = res;
@@ -192,7 +202,7 @@ router.get('/list', function(req,res,next)
         await db_post.findAll({
             offset : ofs,
             limit : pageleng,
-            where : { category: category },
+            where : where,
             order: [['createdAt', 'DESC']],
         })
         .then(result => {
@@ -406,6 +416,7 @@ router.get('/reading', isLogined, function (req, res, next)
                             title: results.title,
                             views: results.views,
                             hearts: results.hearts,
+                            id : results.id,
                         },
                         post_writer : nickname,
                         comment : comments,

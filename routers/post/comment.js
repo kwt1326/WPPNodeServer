@@ -39,7 +39,6 @@ router.post('/', isLogined, function(req, res, next)
     const postid = req.query.postId;
     const guid = req.query.guid;
     const content = req.query.content;
-    const usehide = req.query.usehide;
     const id = req.session.passport.user;
 
     const process = async () => {
@@ -47,7 +46,6 @@ router.post('/', isLogined, function(req, res, next)
             guid : guid,
             writer : parseInt(id),
             content : content,
-            usehide : usehide,
             postId : postid,
         })
         .then(result => {
@@ -70,29 +68,29 @@ router.post('/', isLogined, function(req, res, next)
 // 3. comment Edit (PATCH)
 router.patch('/', isLogined, function(req, res, next) 
 {
+    const id = req.session.passport.user;
     const guid = req.query.guid;
 
-    // const process = async () => {
-    //     return await db_post.update({
-    //     title: req.query.title,
-    //     content: req.query.content,
-    //     category : req.query.category,
-    //     password: req.query.password,
-    //     usehide: req.query.usehide,
-    //     }, { where: { guid : guid } })
-    //     .then(response => {
-    //         console.log('post updated : ' + guid);
-    //         res.send({ result: true });
-    //     })
-    //     .catch(err => {
-    //         console.log("Can't update Post update : " + guid);
-    //         next(err);
-    //     });
-    // }
+    const process = async () => {
+        return await db_comment.update({
+            content: req.query.content,
+        }, { where: { 
+                guid : guid, 
+                writer : id, 
+            } })
+        .then(response => {
+            console.log('post updated : ' + guid);
+            res.send({ result: true });
+        })
+        .catch(err => {
+            console.log("Can't update Post update : " + guid);
+            res.status(404).send("Can't update comment");
+        });
+    }
 
-    // if(guid && req.query.title && req.query.content) {
-    //     process();
-    // }
+    if(guid && req.query.title && req.query.content) {
+        process();
+    }
 });
 
 // 4. comment Delete (DELETE)
@@ -102,14 +100,17 @@ router.delete('/', isLogined, function(req, res, next)
     const guid = req.query.guid;
 
     const process = async () => {
-        return await db_comment.destroy({ where: { guid : guid, userId : id } })
+        return await db_comment.destroy({ where: { guid : guid, writer : id } })
         .then(response => {
-            console.log('comment destroied : ' + guid);
+            if(!response) {
+                res.status(404).send("Wasn't destroid comment (maybe, you aren't writer)");
+            }
+            console.log('comment destroied : ' + response);
             res.send({ result: true });
         })
         .catch(err => {
-            console.log("Can't destroy comment : " + guid);
-            next(err);
+            console.log("Can't destroy comment : " + err);
+            res.status(404).send();
         });
     }
 
