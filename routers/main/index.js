@@ -12,7 +12,7 @@ router.get('/', function(req,res) {
     // }
     // else {
         res.render('main.ejs', { 
-            'joinorder' : req.session.passport.user,
+            'joinorder' : req.user,
         });
     //};
 });

@@ -19,7 +19,7 @@ const comment_r = require('./comment'); // COMMENT ROUTER
 router.get('/', isLogined, function (req, res, next) 
 {
     const guid = req.query.guid;
-    const id = req.session.passport.user;
+    const id = req.user;
 
     const process = async () => {
         return await db_post.findOne({ where: { guid : guid }})
@@ -50,7 +50,7 @@ router.get('/', isLogined, function (req, res, next)
 // 2. Post Apply (POST)
 router.post('/', isLogined, function(req, res, next) 
 {
-    const id = req.session.passport.user;
+    const id = req.user;
 
     const guid = req.query.guid;
     const title = req.query.title;
@@ -106,7 +106,7 @@ router.post('/', isLogined, function(req, res, next)
 router.patch('/', isLogined, function(req, res, next) 
 {
     const guid = req.query.guid;
-    const id = req.session.passport.user;
+    const id = req.user;
 
     const process = async () => {
         await db_user.findOne({where : {id : id}})
@@ -241,7 +241,7 @@ router.patch('/increase', isLogined, function (req, res, next)
     const guid = req.query.id;
     const num = req.query.num;
     const type = req.query.type;
-    const id = req.session.passport.user;
+    const id = req.user;
 
     const process = async () => {
         return await db_user.findOne({ where: {id : id} })

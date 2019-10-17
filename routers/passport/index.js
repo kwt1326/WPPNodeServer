@@ -1,5 +1,7 @@
 // passport strategis
 const passport_local = require('passport-local').Strategy;
+const passport_jwt = require('passport-jwt').Strategy;
+const passport_ext = require('passport-jwt').ExtractJwt;
 const passport_facebook = require('passport-facebook').Strategy;
 const passport_google = require('passport-google').Strategy;
 
@@ -13,17 +15,35 @@ module.exports = (passport) => {
 
     // session serialize
     passport.serializeUser(function (user, done) {
-        //console.log('passport session save : ', user.id);
+        console.log('passport session save : ', user.id);
         done(null, user.id);
     });
 
     passport.deserializeUser(function (id, done) {
-        //console.log('passport session get id : ', id);
+        console.log('passport session get id : ', id);
         db_user.findOne({ where: id })
             .then(find_user => done(null, find_user))
             .catch(err => done(err));
     });
 
+    // Auth jwt token
+    passport.use(new passport_jwt({
+            jwtFromRequest: passport_ext.fromAuthHeaderAsBearerToken(),
+            secretOrKey   : (process.env.NODE_ENV === "production") ? process.env.JWT_SECRET : 'jwt_lo_secret',
+            issuer : (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH : 'http://localhost:3000',
+            audience : (process.env.NODE_ENV === "production") ? process.env.API_PATH : 'http://localhost:3500',
+        },
+        function (payload, callback) {
+            console.log("PAYLOAD : " + payload);
+            return db_user.findOne({where : {id : payload.id}})
+                .then(find_user => {
+                    return callback(null, find_user);
+                })
+                .catch(err => {
+                    return callback(err);
+                });
+        }
+    ));
 
     // login-local
     passport.use('local-login', new passport_local({
@@ -45,10 +65,12 @@ module.exports = (passport) => {
                         return done(null, exist_user);
                     }
                     else {
+                        console.log('Not Compare Password');
                         return done(null, false, { message: "Not Compare Password" });
                     }
                 }
                 else {
+                    console.log('Not exist User');
                     return done(null, false, { message: "Not exist User" });
                 }
             } catch (err) {

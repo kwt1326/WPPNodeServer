@@ -8,7 +8,11 @@ const router = express.Router(); // INDEX ROUTER
 
 router.get('/', isLogined, function (req, res, next) {
 
-   const id = req.session.passport.user;
+   const id = req.user;
+
+   if(id === undefined || id === null)
+      next(err); //return res.status(404).send("invalid id");
+
    db_user.findOne({ where: {id : id} })
    .then(find_user => {
       res.send({
@@ -29,7 +33,7 @@ router.get('/history', isLogined, function (req, res, next)
    const guid = req.query.id;
    const type = req.query.type;
 
-   const id = req.session.passport.user;
+   const id = req.user;
    db_user.findOne({ where: {id : id} })
    .then(find_user => {
       if(guid !== undefined && type !== undefined) {
@@ -83,7 +87,7 @@ router.patch('/', isLogined, function(req, res, next)
          return;
       }
 
-   const id = req.session.passport.user;
+   const id = req.user;
 
    db_user.update({
       nickname: new_nickname,

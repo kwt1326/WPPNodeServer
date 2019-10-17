@@ -15,7 +15,7 @@ const router = express.Router(); // INDEX ROUTER
 router.get('/', isLogined, function (req, res, next) 
 {
     const guid = req.query.guid;
-    const id = req.session.passport.user;
+    const id = req.user;
 
     const process = async () => {
         return await db_post.findOne({ include: { model : db_comment, where : { postId : guid } } })
@@ -39,7 +39,7 @@ router.post('/', isLogined, function(req, res, next)
     const postid = req.query.postId;
     const guid = req.query.guid;
     const content = req.query.content;
-    const id = req.session.passport.user;
+    const id = req.user;
 
     const process = async () => {
         await db_comment.create({
@@ -68,7 +68,7 @@ router.post('/', isLogined, function(req, res, next)
 // 3. comment Edit (PATCH)
 router.patch('/', isLogined, function(req, res, next) 
 {
-    const id = req.session.passport.user;
+    const id = req.user;
     const guid = req.query.guid;
 
     const process = async () => {
@@ -96,7 +96,7 @@ router.patch('/', isLogined, function(req, res, next)
 // 4. comment Delete (DELETE)
 router.delete('/', isLogined, function(req, res, next) 
 {
-    const id = req.session.passport.user;
+    const id = req.user;
     const guid = req.query.guid;
 
     const process = async () => {
@@ -124,7 +124,7 @@ router.patch('/increase', isLogined, function (req, res, next)
 {
     const guid = req.query.id;
     const num = req.query.num;
-    const id = req.session.passport.user;
+    const id = req.user;
 
     const process = async () => {
         return await db_user.findOne({ where: {id : id} })
