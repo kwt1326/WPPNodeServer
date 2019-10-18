@@ -33,9 +33,9 @@ module.exports = (passport) => {
             issuer : (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH : 'http://localhost:3000',
             audience : (process.env.NODE_ENV === "production") ? process.env.API_PATH : 'http://localhost:3500',
         },
-        function (payload, callback) {
-            console.log("PAYLOAD : " + payload);
-            return db_user.findOne({where : {id : payload.id}})
+        function (user, callback) {
+            //console.log("PAYLOAD : " + user);
+            return db_user.findOne({where : {id : user.id}})
                 .then(find_user => {
                     return callback(null, find_user);
                 })
@@ -46,13 +46,12 @@ module.exports = (passport) => {
     ));
 
     // login-local
-    passport.use('local-login', new passport_local({
+    passport.use(new passport_local({
         usernameField: 'email',     // input = email
         passwordField: 'password',  // input = password
         passReqToCallback: true,
     },
-
-        async (req, email, password, done) => {
+        async (req, email, password, callback) => {
             try {
                 console.log("login Check Start!");
                 const exist_user = await db_user.findOne({
@@ -62,20 +61,20 @@ module.exports = (passport) => {
                     const result = await bcrypt.compareSync(password, exist_user.password);
                     if (result) {
                         console.log('Success login');
-                        return done(null, exist_user);
+                        return callback(null, exist_user);
                     }
                     else {
                         console.log('Not Compare Password');
-                        return done(null, false, { message: "Not Compare Password" });
+                        return callback(null, false, { message: "Not Compare Password" });
                     }
                 }
                 else {
                     console.log('Not exist User');
-                    return done(null, false, { message: "Not exist User" });
+                    return callback(null, false, { message: "Not exist User" });
                 }
             } catch (err) {
                 console.log(err);
-                return done(err);
+                return callback(err);
             }
         }
     ));

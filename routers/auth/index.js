@@ -13,53 +13,61 @@ router.get('/', isLogined, function(req,res,next) {
 });
 
 // local login
-router.post('/login', (req, res) => {
-    passport.authenticate('local-login', { // options
+router.post('/login', function(req,res,next) {
+    passport.authenticate('local', { // options
         failureRedirect: (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH + 'login' : "http://localhost:3000/login",
         successFlash: 'Welcome!',
         failureFlash: 'Fail login!',
         session : false // JWT used
-        }, 
-        function successRedirect (err, user, info) { // callback redirect (back to origin)
-            if(err || !user) {
-                return res.status(400).send("Can't Login process : " + err);
-            }
-    
-            req.logIn(user, {session : false}, (err) => {
-                if(err) {
-                    return res.status(400).send("Can't Login process : " + err);
-                }
-    
-                const token = jwt.sign({payload : user.id}, (process.env.NODE_ENV === "production") ? process.env.JWT_SECRET : 'jwt_lo_secret');
+    }, 
+    function successRedirect (err, user, info) { // callback redirect (back to origin)
+        if(err || !user) {
+            return res.status(500).send("Can't Login process : " + err);
+        }
 
-                return res.json({user : user.id, token});
-                //return res.send({user : user.id, token});
-    
-                // if(req.session["redirect"] !== undefined && req.session["redirect-post"] !== undefined){ 
-                //     const redirect = req.session["redirect"];
-                //     const post = req.session["redirect-post"];
-                //     req.session["redirect"] = '';   // used data delete
-                //     req.session["redirect-post"] = {};  // used data delete
-                //     req.session.save(function (err) { 
-                //         if(err) {
-                //             console.log(err);
-                //             return next(err);
-                //         }
-                //         if(post) // if during post auth, prev post load for after login success. 
-                //         {
-                //             res.redirect(url.format({
-                //                 pathname : (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH + redirect : "http://localhost:3000/" + redirect,
-                //                 query : { "post" : post }
-                //             }));  
-                //         }
-                //         else {
-                //             console.log('Redirect To : ' + redirect);
-                //             res.redirect((process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH + redirect : "http://localhost:3000/" + redirect);  
-                //         }
-                //     });
-                // };
-            });           
-    });
+        req.logIn(user, {session : false}, (err) => {
+            if(err) {
+                return res.status(500).send("Can't Login process : " + err);
+            }
+
+            const token = jwt.sign({
+                id : user.id, 
+                nickname : user.nickname,
+                profileimg : user.profileimg,
+            }, (process.env.NODE_ENV === "production") ? process.env.JWT_SECRET : 'jwt_lo_secret', {
+                expiresIn : '1h',
+                issuer : 'aquaclubadmin'
+            });
+
+            return res.send({token});
+
+            //return res.send({user : user.id, token});
+
+            // if(req.session["redirect"] !== undefined && req.session["redirect-post"] !== undefined){ 
+            //     const redirect = req.session["redirect"];
+            //     const post = req.session["redirect-post"];
+            //     req.session["redirect"] = '';   // used data delete
+            //     req.session["redirect-post"] = {};  // used data delete
+            //     req.session.save(function (err) { 
+            //         if(err) {
+            //             console.log(err);
+            //             return next(err);
+            //         }
+            //         if(post) // if during post auth, prev post load for after login success. 
+            //         {
+            //             res.redirect(url.format({
+            //                 pathname : (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH + redirect : "http://localhost:3000/" + redirect,
+            //                 query : { "post" : post }
+            //             }));  
+            //         }
+            //         else {
+            //             console.log('Redirect To : ' + redirect);
+            //             res.redirect((process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH + redirect : "http://localhost:3000/" + redirect);  
+            //         }
+            //     });
+            // };
+        });   
+    })(req,res);        
 });
 
 // logout & session destroy

@@ -9,15 +9,6 @@ module.exports = (sequelize, DataTypes) => (
             type : DataTypes.STRING(40),
             allowNull : false,
         },
-        usehide : {
-            type : DataTypes.BOOLEAN(),
-            allowNull : false,
-            defaultValue : 0,
-        },
-        password : {
-            type : DataTypes.STRING(200),
-            allowNull : true,
-        },
         content : {
             type : DataTypes.TEXT(),
             allowNull : false,

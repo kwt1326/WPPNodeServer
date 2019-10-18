@@ -1,17 +1,17 @@
 const express = require('express');
-const { isLogined } = require('../passport/checklogin');
+const { isLogined, verifyToken } = require('../passport/checklogin');
 
 const db_user = require('../../models/index').user;
 
 // routers
 const router = express.Router(); // INDEX ROUTER
 
-router.get('/', isLogined, function (req, res, next) {
+router.get('/', verifyToken, function (req, res, next) {
 
-   const id = req.user;
+   const id = req.decoded.id;
 
    if(id === undefined || id === null)
-      next(err); //return res.status(404).send("invalid id");
+      return res.status(404).send("invalid id");
 
    db_user.findOne({ where: {id : id} })
    .then(find_user => {
