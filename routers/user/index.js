@@ -1,5 +1,5 @@
 const express = require('express');
-const { isLogined, verifyToken } = require('../passport/checklogin');
+const { verifyToken } = require('../passport/checklogin');
 
 const db_user = require('../../models/index').user;
 
@@ -20,6 +20,7 @@ router.get('/', verifyToken, function (req, res, next) {
          nickname: find_user.nickname,
          username: find_user.username,
          profileimg : find_user.profileimg,
+         level : req.decoded.level
       });
    })
    .catch(err => {
@@ -28,32 +29,36 @@ router.get('/', verifyToken, function (req, res, next) {
    });
 });
 
-router.get('/history', isLogined, function (req, res, next) 
+router.get('/history', verifyToken, function (req, res, next) 
 {
    const guid = req.query.id;
    const type = req.query.type;
+   const id = req.decoded.id;
 
-   const id = req.user;
-   db_user.findOne({ where: {id : id} })
-   .then(find_user => {
-      if(guid !== undefined && type !== undefined) {
-         const find_str = '!' + type + '$' + guid;
-         if(find_user.historys !== null && find_user.historys.indexOf(find_str) !== -1) {
-            res.send({ result : true });
+   if(id !== undefined || id !== null) {
+      db_user.findOne({ where: {id : id} })
+      .then(find_user => {
+         if(guid !== undefined && type !== undefined) {
+            const find_str = '!' + type + '$' + guid;
+            if(find_user.historys !== null && find_user.historys.indexOf(find_str) !== -1) {
+               res.send({ result : true });
+            }
+            else {
+               res.send({result : false});
+            }
          }
          else {
-            res.send({result : false});
+            console.log("because can't travel invalid value");
+            res.status(404).send('invalid value');
          }
-      }
-      else {
-         console.log("because can't travel invalid value");
-         res.status(404).send('invalid value');
-      }
-   })
-   .catch(err => {
-      console.log(err);
-      res.status(404).send('invalid user');
-   });
+      })
+      .catch(err => {
+         console.log(err);
+         res.status(404).send('invalid user');
+      });      
+   }
+   else
+      res.status(404).send('Not yet login');
 });
 
 router.get('/search', function (req,res,next) 
@@ -75,7 +80,7 @@ router.get('/search', function (req,res,next)
 })
 
 // 1. user info update (일부분 갱신, patch 명령 사용)
-router.patch('/', isLogined, function(req, res, next) 
+router.patch('/', verifyToken, function(req, res, next) 
 {
    const new_nickname = req.query.nickname;
    const new_username = req.query.username;
@@ -87,7 +92,7 @@ router.patch('/', isLogined, function(req, res, next)
          return;
       }
 
-   const id = req.user;
+   const id = req.decoded.id;
 
    db_user.update({
       nickname: new_nickname,

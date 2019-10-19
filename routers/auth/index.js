@@ -3,12 +3,12 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const url = require('url');
-const { isLogined } = require('../passport/checklogin');
+const { verifyToken } = require('../passport/checklogin');
 
 // routers
 const router = express.Router(); // INDEX ROUTER
 
-router.get('/', isLogined, function(req,res,next) {
+router.get('/', verifyToken, function(req,res,next) {
     console.log("Immideate logined");
 });
 
@@ -31,12 +31,10 @@ router.post('/login', function(req,res,next) {
             }
 
             const token = jwt.sign({
-                id : user.id, 
-                nickname : user.nickname,
-                profileimg : user.profileimg,
+                id : user.id,
+                level : user.level,
             }, (process.env.NODE_ENV === "production") ? process.env.JWT_SECRET : 'jwt_lo_secret', {
                 expiresIn : '1h',
-                issuer : 'aquaclubadmin'
             });
 
             return res.send({token});
@@ -71,7 +69,7 @@ router.post('/login', function(req,res,next) {
 });
 
 // logout & session destroy
-router.get('/logout', isLogined, (req, res) => {
+router.get('/logout', verifyToken, (req, res) => {
     req.logOut();
     //req.session.destroy(); // not use session
     //res.send({ redirect : '/' });

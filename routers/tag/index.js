@@ -1,5 +1,5 @@
 const express = require('express');
-const { isLogined } = require('../passport/checklogin');
+const { verifyToken } = require('../passport/checklogin');
 
 const db_tag  = require('../../models/index').hashtag;
 
@@ -7,8 +7,9 @@ const db_tag  = require('../../models/index').hashtag;
 const router = express.Router(); // INDEX ROUTER
 
 // 1. get tags (GET)
-router.get('/', function (req, res, next) {
-    db_tag.findAll({attributes: ['name']})
+router.get('/', function (req, res, next) 
+{
+    db_tag.findAll({attributes: ['name'], where : { category : req.query.category}})
     .then(tags => {
        res.send({
          tags: tags,
@@ -21,25 +22,41 @@ router.get('/', function (req, res, next) {
 });
 
 // 2. add tags (POST)
-router.post('/', isLogined, function (req, res, next) 
+router.post('/', verifyToken, function (req, res, next) 
 {
-    db_tag.create({
-        name : req.query.name
-    })
-    .then(result => {
-        res.send(result);
-    })
-    .catch(err => {
-       console.log(err);
-       res.status(400).send("Can't post request 'add tag' : " + err);
-    });
+    async function process () 
+    {
+        const category = (req.decoded.level === 'admin') ? req.query.category : 'board';
+
+        await db_tag.findOne({
+            where : {name : req.query.name, category : category}})
+        .then(result => {
+            console.log("hashtag - duplicate name!"); 
+            next(new Error("hashtag - duplicate name!"));
+        })
+
+        await db_tag.create({
+            name : req.query.name
+        })
+        .then(result => {
+            res.send(result);
+        })
+        .catch(err => {
+           console.log(err);
+           res.status(400).send("Can't post request 'add tag' : " + err);
+        });    
+    }
+
+    process();
 }); 
 
 // 3. delete tags (DELETE)
-router.delete('/', isLogined, function (req, res, next) 
+router.delete('/', verifyToken, function (req, res, next) 
 {
+    const category = (req.decoded.level === 'admin') ? req.query.category : 'board';
+
     db_tag.destroy({
-        where : {name : req.query.name}
+        where : { name : req.query.name, category : category }
     })
     .then(result => {
         res.send(result);

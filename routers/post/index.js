@@ -7,7 +7,7 @@ const db_user = require('../../models/index').user;
 const db_post = require('../../models/index').post;
 const db_comment = require('../../models/index').cmt;
 
-const { isLogined } = require('../passport/checklogin');
+const { verifyToken } = require('../passport/checklogin');
 
 // routers
 const router = express.Router(); // INDEX ROUTER
@@ -16,10 +16,10 @@ const comment_r = require('./comment'); // COMMENT ROUTER
 
 // REST API
 // 1. Post Read (GET)
-router.get('/', isLogined, function (req, res, next) 
+router.get('/', verifyToken, function (req, res, next) 
 {
     const guid = req.query.guid;
-    const id = req.user;
+    const id = req.decoded.id;
 
     const process = async () => {
         return await db_post.findOne({ where: { guid : guid }})
@@ -48,9 +48,9 @@ router.get('/', isLogined, function (req, res, next)
 });
 
 // 2. Post Apply (POST)
-router.post('/', isLogined, function(req, res, next) 
+router.post('/', verifyToken, function(req, res, next) 
 {
-    const id = req.user;
+    const id = req.decoded.id;
 
     const guid = req.query.guid;
     const title = req.query.title;
@@ -59,24 +59,9 @@ router.post('/', isLogined, function(req, res, next)
     const password = req.query.password;
     const frontimg = req.query.frontimg;
     const hashtags = req.query.hashtag;
-    let   category = req.query.category;
+    const category = (req.decoded.level === 'admin') ? req.query.category : 'board';
 
     const process = async () => {
-        await db_user.findOne({where : {id : id}})
-        .then(res => {
-            switch (res.level) {
-                case "user" : {
-                    category = "default"
-                    break;
-                }
-                case "admin" : {
-                    if(hashtags)
-                        category = "tagged"
-                    break;
-                }
-            }
-            
-        })
 
         return await db_post.create({
             title: title,
@@ -103,31 +88,18 @@ router.post('/', isLogined, function(req, res, next)
 });
 
 // 3. Post Edit (PATCH)
-router.patch('/', isLogined, function(req, res, next) 
+router.patch('/', verifyToken, function(req, res, next) 
 {
     const guid = req.query.guid;
-    const id = req.user;
+    const id = req.decoded.id;
+    const category = (req.decoded.level === 'admin') ? req.query.category : 'board';
 
     const process = async () => {
-        await db_user.findOne({where : {id : id}})
-        .then(res => {
-            switch (res.level) {
-                case "user" : {
-                    category = "default"
-                    break;
-                }
-                case "admin" : {
-                    category = "tagged"
-                    break;
-                }
-            }
-            
-        })
 
         return await db_post.update({
             title: req.query.title,
             content: req.query.content,
-            category : req.query.category,
+            category : category,
             password: req.query.password,
             usehide: req.query.usehide,
             frontimg : req.query.frontimg,
@@ -149,12 +121,19 @@ router.patch('/', isLogined, function(req, res, next)
 });
 
 // 4. Post Delete (DELETE)
-router.delete('/', isLogined, function(req, res, next) 
+router.delete('/', verifyToken, function(req, res, next) 
 {
     const guid = req.query.guid;
+    let where = { guid : guid };
 
-    const process = async () => {
-        return await db_post.destroy({ where: { guid : guid } })
+    if(req.decoded.level !== 'admin') {
+        where['category'] = {
+            [op.like] : "%board%"
+        }
+    }
+
+    const process = async () => { // 작성자의 등급에 맞는 포스팅만 선정해 삭제 가능하게 함 (회원-board, 관리자-blog)
+        return await db_post.destroy({where : where})
         .then(response => {
             console.log('post destroied : ' + guid);
             res.send({ result: true });
@@ -174,13 +153,14 @@ router.delete('/', isLogined, function(req, res, next)
 router.get('/list', function(req,res,next) 
 {
     const search = req.query.search;
-    const category = (search === "board") ? "default" : "tagged";
+    const category = req.query.category;
+    const tag = req.query.tag;
     const page = req.query.page - 1;
     const where = { category: category };
 
     if(search !== "board") {
         where['hashtag'] = {
-            [op.like]: "%" + search + "%"
+            [op.like]: "%" + tag + "%"
         }
     }
 
@@ -236,12 +216,12 @@ router.get('/list', function(req,res,next)
 })
 
 // other 1. increase Views or Hearts (patch)
-router.patch('/increase', isLogined, function (req, res, next) 
+router.patch('/increase', verifyToken, function (req, res, next) 
 {
     const guid = req.query.id;
     const num = req.query.num;
     const type = req.query.type;
-    const id = req.user;
+    const id = req.decoded.id;
 
     const process = async () => {
         return await db_user.findOne({ where: {id : id} })
@@ -368,7 +348,7 @@ router.patch('/increase', isLogined, function (req, res, next)
 }) 
 
 // other 2. Post & Comment Read (GET)
-router.get('/reading', isLogined, function (req, res, next) 
+router.get('/reading', function (req, res, next) 
 {
     const guid = req.query.guid;
     async function process () { // COMMENT Find
