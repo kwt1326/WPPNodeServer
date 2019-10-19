@@ -59,7 +59,7 @@ router.post('/', verifyToken, function(req, res, next)
     const password = req.query.password;
     const frontimg = req.query.frontimg;
     const hashtags = req.query.hashtag;
-    const category = (req.decoded.level === 'admin') ? req.query.category : 'board';
+    const category = (req.decoded.level === 'admin') ? 'blog' : 'board';
 
     const process = async () => {
 
@@ -92,7 +92,7 @@ router.patch('/', verifyToken, function(req, res, next)
 {
     const guid = req.query.guid;
     const id = req.decoded.id;
-    const category = (req.decoded.level === 'admin') ? req.query.category : 'board';
+    const category = (req.decoded.level === 'admin') ? 'blog' : 'board';
 
     const process = async () => {
 
@@ -153,14 +153,13 @@ router.delete('/', verifyToken, function(req, res, next)
 router.get('/list', function(req,res,next) 
 {
     const search = req.query.search;
-    const category = req.query.category;
-    const tag = req.query.tag;
+    const category = (search === "board") ? "board" : "blog";
     const page = req.query.page - 1;
     const where = { category: category };
 
     if(search !== "board") {
         where['hashtag'] = {
-            [op.like]: "%" + tag + "%"
+            [op.like]: "%" + search + "%"
         }
     }
 
