@@ -57,8 +57,10 @@ router.get('/history', verifyToken, function (req, res, next)
          res.status(404).send('invalid user');
       });      
    }
-   else
+   else {
+      console.log('Not yet login');
       res.status(404).send('Not yet login');
+   }
 });
 
 router.get('/search', function (req,res,next) 

@@ -1,10 +1,5 @@
 module.exports = (sequelize, DataTypes) => (
     sequelize.define('post', {
-        category : {
-            type : DataTypes.STRING(15),
-            allowNull : false,
-            defaultValue : 'default'
-        },
         title : {
             type : DataTypes.STRING(40),
             allowNull : false,

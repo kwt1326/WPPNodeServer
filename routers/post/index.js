@@ -59,7 +59,11 @@ router.post('/', verifyToken, function(req, res, next)
     const password = req.query.password;
     const frontimg = req.query.frontimg;
     const hashtags = req.query.hashtag;
-    const category = (req.decoded.level === 'admin') ? 'blog' : 'board';
+
+    if(req.decoded.level !== 'admin') {
+        res.status(404).send("권한이 없습니다.");
+        return;
+    }
 
     const process = async () => {
 
@@ -68,7 +72,6 @@ router.post('/', verifyToken, function(req, res, next)
             usehide: usehide,
             password: password,
             content: content,
-            category: category,
             userId: id,
             hashtag : hashtags,
             guid: guid,
@@ -92,14 +95,17 @@ router.patch('/', verifyToken, function(req, res, next)
 {
     const guid = req.query.guid;
     const id = req.decoded.id;
-    const category = (req.decoded.level === 'admin') ? 'blog' : 'board';
+
+    if(req.decoded.level !== 'admin') {
+        res.status(404).send("권한이 없습니다.");
+        return;
+    }
 
     const process = async () => {
 
         return await db_post.update({
             title: req.query.title,
             content: req.query.content,
-            category : category,
             password: req.query.password,
             usehide: req.query.usehide,
             frontimg : req.query.frontimg,
@@ -127,9 +133,8 @@ router.delete('/', verifyToken, function(req, res, next)
     let where = { guid : guid };
 
     if(req.decoded.level !== 'admin') {
-        where['category'] = {
-            [op.like] : "%board%"
-        }
+        res.status(404).send("권한이 없습니다.");
+        return;
     }
 
     const process = async () => { // 작성자의 등급에 맞는 포스팅만 선정해 삭제 가능하게 함 (회원-board, 관리자-blog)
@@ -153,23 +158,14 @@ router.delete('/', verifyToken, function(req, res, next)
 router.get('/list', function(req,res,next) 
 {
     const search = req.query.search;
-    const category = (search === "board") ? "board" : "blog";
     const page = req.query.page - 1;
-    const where = { category: category };
-
-    if(search !== "board") {
-        where['hashtag'] = {
-            [op.like]: "%" + search + "%"
-        }
-    }
+    const where = { hashtag: {[op.like]: "%" + search + "%"} };
 
     const process = async () => 
     {
         let row_count = 0;
 
-        await db_post.count({
-            where : where,
-        })
+        await db_post.count((search !== "All") ? { where : where } : null)
         .then(res => {
             row_count = res;
         })
@@ -181,7 +177,7 @@ router.get('/list', function(req,res,next)
         await db_post.findAll({
             offset : ofs,
             limit : pageleng,
-            where : where,
+            where : (search !== "All") ? where : null,
             order: [['createdAt', 'DESC']],
         })
         .then(result => {
@@ -390,7 +386,6 @@ router.get('/reading', function (req, res, next)
                             content: results.content,
                             createdAt: results.createdAt,
                             updatedAt: results.updatedAt,
-                            category: results.category,
                             userId: results.userId,
                             title: results.title,
                             views: results.views,
