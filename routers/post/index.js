@@ -411,6 +411,63 @@ router.get('/reading', function (req, res, next)
         process();          
 });
 
+// other 3. post search (get)
+router.get('/search/:keyword', function(req,res,next) 
+{
+    const keyword = req.params.keyword;
+
+    const process = async () => 
+    {
+        let where = {
+            title : {[op.like]: "%" + keyword + "%"},
+            hashtag : {[op.like]: "%" + keyword + "%"},
+        }
+        let row_count = 0;
+
+        await db_post.count({ where : where })
+        .then(res => {
+            row_count = res;
+        })
+
+        let rows = [];
+        let page = 0;
+
+        await db_post.findAll({
+            offset : 0,
+            limit : 10,
+            where : where,
+            order: [['createdAt', 'DESC']],
+        })
+        .then(result => {
+            async function getrows () {
+                for(let i = 0 ; i < result.length ; ++i) {
+                    await db_user.findOne({ where: { id: result[i].userId } })
+                    .then(result_user => {
+                        rows[i] = {
+                            content: result[i],
+                            writer: result_user.nickname
+                        }
+                    })
+                }    
+            }
+
+            async function send () {
+                await getrows();
+                res.send({
+                    result: true,
+                    ofs: row_count - (page * 10),
+                    count: row_count,
+                    rows: rows,
+                });        
+            }
+
+            send();
+        })
+    }
+
+    process();
+})
+
 router.use('/files', file_r);
 router.use('/comment', comment_r);
 
