@@ -29,20 +29,23 @@ router.post('/', verifyToken, function (req, res, next)
         await db_tag.findOne({
             where : {name : req.query.name}})
         .then(result => {
-            console.log("hashtag - duplicate name!"); 
-            next(new Error("hashtag - duplicate name!"));
+            if(result === null) {
+                db_tag.create({
+                    name : req.query.name
+                })
+                .then(result => {
+                    res.send(result);
+                })
+                .catch(err => {
+                   console.log(err);
+                   res.status(400).send("Can't post request 'add tag' : " + err);
+                });        
+            }
+            else {
+                console.log("hashtag - duplicate name!"); 
+                res.status(400).send("Can't post request 'add tag' : duplicate");
+            }
         })
-
-        await db_tag.create({
-            name : req.query.name
-        })
-        .then(result => {
-            res.send(result);
-        })
-        .catch(err => {
-           console.log(err);
-           res.status(400).send("Can't post request 'add tag' : " + err);
-        });    
     }
 
     process();

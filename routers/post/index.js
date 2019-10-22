@@ -391,6 +391,7 @@ router.get('/reading', function (req, res, next)
                             views: results.views,
                             hearts: results.hearts,
                             id : results.id,
+                            hashtag : results.hashtag,
                         },
                         post_writer : nickname,
                         comment : comments,

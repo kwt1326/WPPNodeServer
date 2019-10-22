@@ -41,6 +41,8 @@ router.post('/', verifyToken, function(req, res, next)
     const content = req.query.content;
     const id = req.decoded.id;
 
+    console.log(id);
+
     const process = async () => {
         await db_comment.create({
             guid : guid,
@@ -59,6 +61,7 @@ router.post('/', verifyToken, function(req, res, next)
 
     if(!content || !guid || !postid || !id) {
         console.log("FAIL APPLY COMMENT");
+        res.status(404).send();
         return;
     }
 
@@ -88,7 +91,7 @@ router.patch('/', verifyToken, function(req, res, next)
         });
     }
 
-    if(guid && req.query.title && req.query.content) {
+    if(guid && req.query.content) {
         process();
     }
 });
