@@ -15,7 +15,7 @@ router.get('/', verifyToken, function(req,res,next) {
 // local login
 router.post('/login', function(req,res,next) {
     passport.authenticate('local', { // options
-        failureRedirect: (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH + 'login' : "http://localhost:3000/login",
+        failureRedirect: (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH + '/login' : "http://localhost:3000/login",
         successFlash: 'Welcome!',
         failureFlash: 'Fail login!',
         session : false // JWT used
@@ -74,7 +74,7 @@ router.get('/social/google', passport.authenticate('google'));
 
 router.get('/facebook/callback', 
     passport.authenticate('facebook', { 
-        failureRedirect: process.env.CLIENT_PATH + 'login',
+        failureRedirect: process.env.CLIENT_PATH + '/login',
         session : false,
     }), (req,res) => {
         console.log("SUCCESS FACEBOOK LOGGED , redirect : " + process.env.CLIENT_PATH);
