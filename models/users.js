@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => (
         nickname : {
             type : DataTypes.STRING(15),
             allowNull : false,
+            defaultValue : 'default',
         },
         username : {
             type : DataTypes.STRING(15),
@@ -16,6 +17,7 @@ module.exports = (sequelize, DataTypes) => (
         password : {
             type : DataTypes.STRING(100),
             allowNull : false,
+            defaultValue : 'social',
         },
         provider : {
             type : DataTypes.STRING(15),

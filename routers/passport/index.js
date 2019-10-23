@@ -1,9 +1,9 @@
 // passport strategis
-const passport_local = require('passport-local').Strategy;
-const passport_jwt = require('passport-jwt').Strategy;
-const passport_ext = require('passport-jwt').ExtractJwt;
-const passport_facebook = require('passport-facebook').Strategy;
-const passport_google = require('passport-google').Strategy;
+const localStrategy = require('passport-local').Strategy;
+const jwtStrategy = require('passport-jwt').Strategy;
+const extStrategy = require('passport-jwt').ExtractJwt;
+const facebookStrategy = require('passport-facebook').Strategy;
+const googleStrategy = require('passport-google').Strategy;
 
 // crypt
 const bcrypt = require('bcrypt-nodejs');
@@ -27,8 +27,8 @@ module.exports = (passport) => {
     });
 
     // Auth jwt token
-    passport.use(new passport_jwt({
-            jwtFromRequest: passport_ext.fromAuthHeaderAsBearerToken(),
+    passport.use(new jwtStrategy({
+            jwtFromRequest: extStrategy.fromAuthHeaderAsBearerToken(),
             secretOrKey   : (process.env.NODE_ENV === "production") ? process.env.JWT_SECRET : 'jwt_lo_secret',
             issuer : (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH : 'http://localhost:3000',
             audience : (process.env.NODE_ENV === "production") ? process.env.API_PATH : 'http://localhost:3500',
@@ -46,7 +46,7 @@ module.exports = (passport) => {
     ));
 
     // login-local
-    passport.use(new passport_local({
+    passport.use(new localStrategy({
         usernameField: 'email',     // input = email
         passwordField: 'password',  // input = password
         passReqToCallback: true,
@@ -80,26 +80,37 @@ module.exports = (passport) => {
     ));
 
     // login-facebook
-    passport.use(new passport_facebook({
+    passport.use(new facebookStrategy({
         clientID: process.env.FACEBOOK_ID_T,
         clientSecret: process.env.FACEBOOK_SECRET_T,
         callbackURL: process.env.FACEBOOK_CALLBACK_T,
         profileFields: ['id', 'displayName', 'photos', 'email']
     },
         async (accessToken, refreshToken, profile, callback) => {
-            const email = profile.email;
-            const snsID = profile.id;
-            const provider = "facebook";
-            const nickname = profile.displayName;
-            const profileimg = profile.photos[0].value;
-            console.log(accessToken);
-
-            db_user.findOrCreate({ email, nickname, provider, snsID, profileimg }, function (err, user) {
-                return callback(null, user);
-              })
-              .spread((find_user, created) => {
-                console.log(created)
-              })
+            try {
+                const email = (profile.email) ? profile.email : profile.id + "@facebook.com.fakemail";
+                const snsID = profile.id;
+                const provider = "facebook";
+                const nickname = (profile.displayName) ? profile.displayName : "Facebook-" + profile.id;
+                const username = nickname;
+                const profileimg = profile.photos[0].value;
+    
+                await db_user.findOrCreate({ where: { email : email }, 
+                    defaults: {
+                        nickname, 
+                        username,
+                        provider, 
+                        snsID, 
+                        profileimg 
+                    }})
+                  .spread((find_user, created) => {
+                    callback(null, find_user);
+                    console.log(created)
+                  })
+            }
+            catch (err) {
+                console.log(err);
+            }
         }
     ));    
 }

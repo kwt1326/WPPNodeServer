@@ -69,42 +69,21 @@ router.post('/login', function(req,res,next) {
 });
 
 // social login strategy
-router.get('/social/:strategy', function(req,res,next) 
-{
-    const strategy = req.params.strategy;
-    switch (strategy) 
-    {
-        case 'facebook' :
-            {
-                passport.authenticate('facebook', { // options
-                    //authType: 'rerequest', scope: ['public_profile', 'email'],
-                    failureRedirect: process.env.CLIENT_PATH + 'login',
-                    session : false // JWT used
-                })(req,res);
-                break;
-            }
-        case 'google' :
-            {
-                break;
-            }
-        default : {
-            res.status(400).send("Not found strategy : " + strategy);
-        }
-    }
-});
+router.get('/social/facebook', passport.authenticate('facebook'));
+router.get('/social/google', passport.authenticate('google'));
 
-router.get('/facebook/callback', (req, res) => {
+router.get('/facebook/callback', 
     passport.authenticate('facebook', { 
         failureRedirect: process.env.CLIENT_PATH + 'login',
         session : false,
-    }, (err, user, info) => {
-        console.log("SUCCESS FACEBOOK LOGGED");
+    }), (req,res) => {
+        console.log("SUCCESS FACEBOOK LOGGED , redirect : " + process.env.CLIENT_PATH);
         const token = user.jwtoken;
         res.cookie('auth_token', token); 
-        res.redirect('/');
+        return res.redirect(process.env.CLIENT_PATH + 'login');
         //res.send({result : true, msg : 'facebook Success logged!'});
-    })(req,res);
-});
+    }
+);
 
 // logout & session destroy
 router.get('/logout', verifyToken, (req, res) => {
