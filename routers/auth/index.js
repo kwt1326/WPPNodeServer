@@ -78,10 +78,8 @@ router.get('/facebook/callback',
         session : false,
     }), (req,res) => {
         console.log("SUCCESS FACEBOOK LOGGED , redirect : " + process.env.CLIENT_PATH);
-        const token = user.jwtoken;
-        res.cookie('auth_token', token); 
-        return res.redirect(process.env.CLIENT_PATH + 'login');
-        //res.send({result : true, msg : 'facebook Success logged!'});
+        res.cookie('userdata', req.user); 
+        res.redirect(String(process.env.CLIENT_PATH));
     }
 );
 
