@@ -80,17 +80,26 @@ module.exports = (passport) => {
     ));
 
     // login-facebook
-    passport.use('facebook-login', new passport_facebook({
-        clientID: "FACEBOOK CLIENT ID",
-        clientSecret: "FACEBOOK SECRET",
-        callbackURL: "CALLBACK URL"
+    passport.use(new passport_facebook({
+        clientID: process.env.FACEBOOK_ID_T,
+        clientSecret: process.env.FACEBOOK_SECRET_T,
+        callbackURL: process.env.FACEBOOK_CALLBACK_T,
+        profileFields: ['id', 'displayName', 'photos', 'email']
     },
+        async (accessToken, refreshToken, profile, callback) => {
+            const email = profile.email;
+            const snsID = profile.id;
+            const provider = "facebook";
+            const nickname = profile.displayName;
+            const profileimg = profile.photos[0].value;
+            console.log(accessToken);
 
-        async (accessToken, refreshToken, profile, done) => {
-            //User.findOrCreate(..., function(err, user) {
-            //  if (err) { return done(err); }
-            //  done(null, user);
-            //});
+            db_user.findOrCreate({ email, nickname, provider, snsID, profileimg }, function (err, user) {
+                return callback(null, user);
+              })
+              .spread((find_user, created) => {
+                console.log(created)
+              })
         }
     ));    
 }

@@ -68,6 +68,44 @@ router.post('/login', function(req,res,next) {
     })(req,res);        
 });
 
+// social login strategy
+router.get('/social/:strategy', function(req,res,next) 
+{
+    const strategy = req.params.strategy;
+    switch (strategy) 
+    {
+        case 'facebook' :
+            {
+                passport.authenticate('facebook', { // options
+                    //authType: 'rerequest', scope: ['public_profile', 'email'],
+                    failureRedirect: process.env.CLIENT_PATH + 'login',
+                    session : false // JWT used
+                })(req,res);
+                break;
+            }
+        case 'google' :
+            {
+                break;
+            }
+        default : {
+            res.status(400).send("Not found strategy : " + strategy);
+        }
+    }
+});
+
+router.get('/facebook/callback', (req, res) => {
+    passport.authenticate('facebook', { 
+        failureRedirect: process.env.CLIENT_PATH + 'login',
+        session : false,
+    }, (err, user, info) => {
+        console.log("SUCCESS FACEBOOK LOGGED");
+        const token = user.jwtoken;
+        res.cookie('auth_token', token); 
+        res.redirect('/');
+        //res.send({result : true, msg : 'facebook Success logged!'});
+    })(req,res);
+});
+
 // logout & session destroy
 router.get('/logout', verifyToken, (req, res) => {
     req.logOut();
@@ -121,45 +159,6 @@ router.post('/mailing', (req, res) =>
             console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
         });
     });
-
-    // async function process () {
-    //     // create reusable transporter object using the default SMTP transport
-    //     let transporter = nodemailer.createTransport({
-    //         // host: testAccount.smtp.host,
-    //         // port: testAccount.smtp.port,
-    //         // secure: testAccount.smtp.secure, // true for 465, false for other ports
-    //         service : 'gmail',
-    //         auth: {
-    //             user: "fake", // generated ethereal user
-    //             pass: "fakepass" // generated ethereal password
-    //         },
-    //     });
-        
-    //     // send mail with defined transport object
-    //     const message = {
-    //         from: '"E-mail forgot authentication" <no-reqly@aquaclub.club>', // sender address
-    //         to: to_email, // list of receivers
-    //         subject: 'E-mail authentication at aquaclub.club ✔', // Subject line
-    //         text: 'Hello world?', // plain text body
-    //         html: '<b>Hello world?</b>' // html body
-    //     }
-
-    //     await transporter.sendMail(message, (error, info) => {
-    //         if (error) {
-    //             console.log('Error occurred');
-    //             console.log(error.message);
-    //             return process.exit(1);
-    //         }
-    
-    //         console.log('Message sent successfully!');
-    //         console.log(nodemailer.getTestMessageUrl(info));
-    
-    //         // only needed when using pooled connections
-    //         transporter.close();
-    //     });
-    // };
-
-    //process();
 })
 
 module.exports = router;
