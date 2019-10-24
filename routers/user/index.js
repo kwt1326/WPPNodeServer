@@ -29,6 +29,33 @@ router.get('/', verifyToken, function (req, res, next) {
    });
 });
 
+// delete user
+router.delete('/', verifyToken, function (req, res, next) {
+
+   const id = req.decoded.id;
+
+   if(id === undefined || id === null)
+      return res.status(404).send("invalid id");
+
+   db_user.destroy({ where: {id : id} })
+   .then(find_user => {
+      if(!find_user) {
+         return res.status(404).send("Failed destroy user : " + String(id));
+      }
+      else {
+         console.log("Destroy user : " + String(id));
+         req.logOut();
+         res.clearCookie('userdata');
+         res.clearCookie('jwttoken');
+         res.send({ result : true });
+      }
+   })
+   .catch(err => {
+      console.log(err);
+      next(err);
+   });
+});
+
 router.get('/history', verifyToken, function (req, res, next) 
 {
    const guid = req.query.id;

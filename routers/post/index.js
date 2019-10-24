@@ -385,7 +385,14 @@ router.get('/reading', function (req, res, next)
                                 profileimg : result_user.profileimg,
                                 nickname : result_user.nickname,
                             }
-                        });        
+                        })      
+                        .catch(err => {
+                            console.log("deleted writer : " + comments[i].writer);
+                            expand[i] = {
+                                profileimg : null,
+                                nickname : "(unknown)",
+                            }
+                        })
                     }
                 }
             }

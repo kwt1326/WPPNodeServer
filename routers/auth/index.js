@@ -37,48 +37,37 @@ router.post('/login', function(req,res,next) {
                 expiresIn : '1h',
             });
 
-            return res.send({token});
+            res.cookie('jwttoken', token ); 
+            res.redirect(process.env.CLIENT_PATH);
 
-            //return res.send({user : user.id, token});
-
-            // if(req.session["redirect"] !== undefined && req.session["redirect-post"] !== undefined){ 
-            //     const redirect = req.session["redirect"];
-            //     const post = req.session["redirect-post"];
-            //     req.session["redirect"] = '';   // used data delete
-            //     req.session["redirect-post"] = {};  // used data delete
-            //     req.session.save(function (err) { 
-            //         if(err) {
-            //             console.log(err);
-            //             return next(err);
-            //         }
-            //         if(post) // if during post auth, prev post load for after login success. 
-            //         {
-            //             res.redirect(url.format({
-            //                 pathname : (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH + redirect : "http://localhost:3000/" + redirect,
-            //                 query : { "post" : post }
-            //             }));  
-            //         }
-            //         else {
-            //             console.log('Redirect To : ' + redirect);
-            //             res.redirect((process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH + redirect : "http://localhost:3000/" + redirect);  
-            //         }
-            //     });
-            // };
         });   
     })(req,res);        
 });
 
 // social login strategy
 router.get('/social/facebook', passport.authenticate('facebook'));
-router.get('/social/google', passport.authenticate('google'));
+router.get('/social/google', passport.authenticate('google', 
+    { scope: ['profile'] }
+));
 
 router.get('/facebook/callback', 
     passport.authenticate('facebook', { 
-        failureRedirect: process.env.CLIENT_PATH + '/login',
+        failureRedirect: process.env.CLIENT_PATH,
         session : false,
     }), (req,res) => {
-        console.log("SUCCESS FACEBOOK LOGGED , redirect : " + process.env.CLIENT_PATH);
-        res.cookie('userdata', req.user); 
+        console.log("SUCCESS FACEBOOK LOGGED : ");
+        res.cookie('userdata', req.user.id ); 
+        res.redirect(String(process.env.CLIENT_PATH));
+    }
+);
+
+router.get('/google/callback', 
+    passport.authenticate('google', { 
+        failureRedirect: process.env.CLIENT_PATH,
+        session : false,
+    }), (req,res) => {
+        console.log("SUCCESS GOOGLE_OAUTH20 LOGGED : ");
+        res.cookie('userdata', req.user.id ); 
         res.redirect(String(process.env.CLIENT_PATH));
     }
 );
@@ -86,9 +75,9 @@ router.get('/facebook/callback',
 // logout & session destroy
 router.get('/logout', verifyToken, (req, res) => {
     req.logOut();
-    //req.session.destroy(); // not use session
-    //res.send({ redirect : '/' });
-    res.redirect((process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH : "http://localhost:3000");  
+    res.clearCookie('userdata');
+    res.clearCookie('jwttoken');
+    res.redirect(process.env.CLIENT_PATH);  
     return;
 });
 

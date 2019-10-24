@@ -3,7 +3,7 @@ const localStrategy = require('passport-local').Strategy;
 const jwtStrategy = require('passport-jwt').Strategy;
 const extStrategy = require('passport-jwt').ExtractJwt;
 const facebookStrategy = require('passport-facebook').Strategy;
-const googleStrategy = require('passport-google').Strategy;
+const googleStrategy = require('passport-google-oauth20').Strategy;
 
 // crypt
 const bcrypt = require('bcrypt-nodejs');
@@ -81,9 +81,9 @@ module.exports = (passport) => {
 
     // login-facebook
     passport.use(new facebookStrategy({
-        clientID: process.env.FACEBOOK_ID_T,
-        clientSecret: process.env.FACEBOOK_SECRET_T,
-        callbackURL: process.env.FACEBOOK_CALLBACK_T,
+        clientID: process.env.FACEBOOK_ID,
+        clientSecret: process.env.FACEBOOK_SECRET,
+        callbackURL: process.env.FACEBOOK_CALLBACK,
         profileFields: ['id', 'displayName', 'photos', 'email']
     },
         async (accessToken, refreshToken, profile, callback) => {
@@ -113,4 +113,40 @@ module.exports = (passport) => {
             }
         }
     ));    
+
+    // login-google oauth20
+    passport.use(new googleStrategy({
+        clientID: process.env.GOOGLE_ID,
+        clientSecret: process.env.GOOGLE_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK,
+        profileFields: ['id', 'displayName', 'photos', 'email']
+    },
+        async (accessToken, refreshToken, profile, callback) => {
+            try {
+                console.log(profile);
+                const email = (profile.email) ? profile.email : profile.id + "@google.com.fakemail";
+                const snsID = profile.id;
+                const provider = "google";
+                const nickname = (profile.displayName) ? profile.displayName : "google-" + profile.id;
+                const username = nickname;
+                const profileimg = profile.photos[0].value;
+    
+                await db_user.findOrCreate({ where: { email : email }, 
+                    defaults: {
+                        nickname, 
+                        username,
+                        provider, 
+                        snsID, 
+                        profileimg 
+                    }})
+                  .spread((find_user, created) => {
+                    callback(null, find_user);
+                    console.log(created)
+                  })
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+    ));        
 }

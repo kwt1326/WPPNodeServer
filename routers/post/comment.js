@@ -83,7 +83,11 @@ router.patch('/', verifyToken, function(req, res, next)
             } })
         .then(response => {
             console.log('post updated : ' + guid);
-            res.send({ result: true });
+            if(response[0] === 0) {
+                res.status(404).send("you're not assigned update comment");
+            }
+            else
+                res.send({ result: true });
         })
         .catch(err => {
             console.log("Can't update Post update : " + guid);
