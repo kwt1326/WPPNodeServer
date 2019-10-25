@@ -20,6 +20,7 @@ router.get('/', verifyToken, function (req, res, next) {
          nickname: find_user.nickname,
          username: find_user.username,
          profileimg : find_user.profileimg,
+         provider : find_user.provider,
          level : req.decoded.level
       });
    })
@@ -68,9 +69,11 @@ router.get('/history', verifyToken, function (req, res, next)
          if(guid !== undefined && type !== undefined) {
             const find_str = '!' + type + '$' + guid;
             if(find_user.historys !== null && find_user.historys.indexOf(find_str) !== -1) {
+               console.log(`Exist [${type}] history`);
                res.send({ result : true });
             }
             else {
+               console.log(`Not Exist [${type}] history`);
                res.send({result : false});
             }
          }
@@ -80,6 +83,7 @@ router.get('/history', verifyToken, function (req, res, next)
          }
       })
       .catch(err => {
+         console.log(`Not Exist user ${String(id)}`);
          console.log(err);
          res.status(404).send('invalid user');
       });      

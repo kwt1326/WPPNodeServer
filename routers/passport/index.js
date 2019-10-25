@@ -58,6 +58,12 @@ module.exports = (passport) => {
                     where: { email },
                 });
                 if (exist_user) {
+                    // if not local, forced cancel login
+                    if(exist_user.provider !== 'local') {
+                        console.log("Can't login for this account");
+                        return callback(null, false, { message: "Can't login for this account" });
+                    }
+
                     const result = await bcrypt.compareSync(password, exist_user.password);
                     if (result) {
                         console.log('Success login');

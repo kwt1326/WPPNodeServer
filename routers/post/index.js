@@ -248,18 +248,21 @@ router.patch('/increase', verifyToken, function (req, res, next)
                         {
                             // UPDATE USER HISTORY //
                             let history = find_user.historys;
-                            let matched = history.match(/!view/g); 
-                            if (matched !== null) {
-                                if(matched.length > 5) { // 최근 view 기록 한도
-                                    const search_st = history.indexOf("!view$");
-                                    const removeword = history.substring(history.indexOf("!view$"),history.indexOf("!", search_st + 5));
-                                    history = history.replace(removeword, "");
-                                }   
+                            if(history !== null) {
+                                let matched = history.match(/!view/g); 
+                                if (matched !== null) {
+                                    if(matched.length > 5) { // 최근 view 기록 한도
+                                        const search_st = history.indexOf("!view$");
+                                        const removeword = history.substring(history.indexOf("!view$"),history.indexOf("!", search_st + 5));
+                                        history = history.replace(removeword, "");
+                                    }   
+                                }    
                             }
 
-                            if(history === null || history.indexOf('!view$' + guid) === -1) { // Save only first view histroy
+                            if(history === null || history === undefined || history.indexOf('!view$' + guid) === -1) { // Save only first view histroy
+                                let historyBase = (history === null) ? "" : history;
                                 db_user.update({
-                                    historys: history + '!view$' + guid,
+                                    historys: historyBase + '!view$' + guid,
                                 }, { where: { id: id } })
                                 .then(response => {
                                     console.log('view history updated');
@@ -299,8 +302,9 @@ router.patch('/increase', verifyToken, function (req, res, next)
                         {                            
                             // UPDATE USER HISTORY //
                             if (find_user.historys === null || find_user.historys.indexOf('!heart$' + guid) === -1) {
+                                let historyBase = (find_user.historys === null) ? "" : find_user.historys;
                                 db_user.update({
-                                    historys: find_user.historys + '!heart$' + guid,
+                                    historys: historyBase + '!heart$' + guid,
                                 }, { where: { id: id } })
                                 .then(response => {
                                     console.log('heart history updated');
@@ -384,6 +388,7 @@ router.get('/reading', function (req, res, next)
                             expand[i] = {
                                 profileimg : result_user.profileimg,
                                 nickname : result_user.nickname,
+                                provider : result_user.provider
                             }
                         })      
                         .catch(err => {

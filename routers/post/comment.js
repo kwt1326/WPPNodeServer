@@ -148,8 +148,9 @@ router.patch('/increase', verifyToken, function (req, res, next)
                     {
                         // UPDATE USER HISTORY //
                         if (find_user.historys === null || find_user.historys.indexOf('!heart$' + guid) === -1) {
+                            let historyBase = (find_user.historys === null) ? "" : find_user.historys;
                             db_user.update({
-                                historys: find_user.historys + '!heart$' + guid,
+                                historys: historyBase + '!heart$' + guid,
                             }, { where: { id: id } })
                             .then(response => {
                                 console.log('heart history updated');

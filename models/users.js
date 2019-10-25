@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => (
     sequelize.define('user', {
         email : {
-            type : DataTypes.STRING(40),
+            type : DataTypes.STRING(50),
             allowNull : false,
             unique : true,
         },
@@ -35,6 +35,7 @@ module.exports = (sequelize, DataTypes) => (
         historys : {
             type : DataTypes.TEXT(),
             allowNull : true,
+            defaultValue : 'default',
         },
         level : {
             type : DataTypes.STRING(10),
