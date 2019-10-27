@@ -2,11 +2,28 @@ const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const url = require('url');
+const bcrypt = require('bcrypt-nodejs');
 const { verifyToken } = require('../passport/checklogin');
 
 // routers
 const router = express.Router(); // INDEX ROUTER
+
+const db_user = require('../../models/index').user;
+
+// Create a SMTP transporter object (mailing)
+const transporter = nodemailer.createTransport({
+    service : 'Gmail',
+    auth: {
+        user: process.env.GMAIL_MAIL,
+        pass: process.env.GMAIL_PASSWORD
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
+});
+
+let verifyCode = null;
+let host = null;
 
 router.get('/', verifyToken, function(req,res,next) {
     console.log("Immideate logined");
@@ -81,50 +98,113 @@ router.get('/logout', verifyToken, (req, res) => {
     return;
 });
 
-router.post('/mailing', (req, res) => 
-{
-    const to_email = req.query.email;
+// change password (local account)
+router.patch('/cpw', async (req, res) => {
+    const hashkey = req.query.verify;
+    const pw = req.query.pw;
+    const pwCheck = req.query.pwCheck;
 
-    // Generate SMTP service account from ethereal.email
-    nodemailer.createTestAccount((err, account) => {
+    if(pw === pwCheck) {
+        const result = await bcrypt.compareSync(verifyCode, hashkey);
+        if(result) {
+            const data = verifyCode.split(process.env.EMAIL_AUTH_SECRET);
+            const email = data[0];
+            let hashedPW = null;
+
+            console.log(verifyCode);
+            console.log(email);
+
+            await bcrypt.genSalt(10, (err, salt) => {
+                if(err) {
+                    res.status(403).send(err);
+                }
+                else {
+                    bcrypt.hash(verifyCode, salt, null, async (err, hash) => {
+                        hashedPW = hash;
+                    });
+                }
+            })
+
+            await db_user.update({ password : hashedPW }, { where : {email : email} })
+            .then(result => {
+                res.send({result : result});
+            })
+            .catch(err => {
+                res.status(403).send("invalid user");
+            })
+        }
+    }
+    else {
+        res.status(403).send("Failed Compare Password");
+    }
+});
+
+router.get('/mail/verify', async (req, res) => 
+{
+    console.log(req.protocol + "://" + req.get('host'));
+
+    if ((req.protocol + "://" + req.get('host')) === 
+        (((process.env.NODE_ENV === "production") ? "https://" : "http://") + host)) {
+
+        // 인증 키 복호화
+        const result = await bcrypt.compareSync( verifyCode, req.query.key );
+        if(result) {
+            res.redirect(`${process.env.CLIENT_PATH}auth/cpw?verify=${req.query.key}`)
+        }
+        else {
+            res.end("<h1>Failed Compare verify keys</h1>");
+        }
+    }
+    else {
+        res.end("<h1>Request is from unknown source</h1>");
+    }
+});
+
+router.post('/mail/send', async (req, res) => 
+{
+    const to_email = req.body.email;
+    verifyCode = String(to_email) + String(process.env.EMAIL_AUTH_SECRET) + String(Math.floor((Math.random() * 100) + 77)); // original key
+    let sendCode = null;
+
+    // 인증 키 암호화
+    await bcrypt.genSalt(10, (err, salt) => {
+        if(err) {
+            res.status(403).send(err);
+        }
+        else {
+            bcrypt.hash(verifyCode, salt, null, async (err, hash) => {
+                try {
+                    sendCode = hash;
+                }
+                catch (err) {
+                    console.log(err);
+                    return res.status(404).send(err);
+                }
+            });
+        }
+    })
+
+    host = req.get('host');
+    const link = `${process.env.API_PATH}api/auth/mail/verify?key=${sendCode}`;
+
+    // Message object
+    let message = {
+        from: 'E-mail forgot authentication <no-reqly@aquaclub.club>',
+        to: to_email,
+        subject: 'E-mail forgot authentication click to Success ✔',
+        text: 'Hello to myself!',
+        html: `<p><h1>A/Q/U/A E-mail Verify Mail Authentication Page</h1></p>
+            <a href='${link}'>이메일 인증하기</a>`
+    };
+
+    transporter.sendMail(message, (err, info) => {
         if (err) {
-            console.error('Failed to create a testing account. ' + err.message);
+            console.log('Error occurred. ' + err.message);
             return process.exit(1);
         }
-
-        console.log('Credentials obtained, sending message...');
-
-        // Create a SMTP transporter object
-        let transporter = nodemailer.createTransport({
-            host: account.smtp.host,
-            port: account.smtp.port,
-            secure: account.smtp.secure,
-            auth: {
-                user: account.user,
-                pass: account.pass
-            }
-        });
-
-        // Message object
-        let message = {
-            from: 'E-mail forgot authentication <no-reqly@aquaclub.club>',
-            to: to_email,
-            subject: 'E-mail forgot authentication click to Success ✔',
-            text: 'Hello to myself!',
-            html: "<p></p><a href='http://localhost:3500/api/auth/?email="+ to_email +"&token=abcdefg'>인증하기</a>"
-        };
-
-        transporter.sendMail(message, (err, info) => {
-            if (err) {
-                console.log('Error occurred. ' + err.message);
-                return process.exit(1);
-            }
-
-            console.log('Message sent: %s', info.messageId);
-            // Preview only available when sending through an Ethereal account
-            console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-        });
+        //console.log('Message sent: %s', info.messageId);
+        res.redirect(`${process.env.CLIENT_PATH}auth/e-mail?result=true`);
     });
-})
+});
 
 module.exports = router;
