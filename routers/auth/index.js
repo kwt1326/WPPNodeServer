@@ -145,8 +145,7 @@ router.get('/mail/verify', async (req, res) =>
 {
     console.log(req.protocol + "://" + req.get('host'));
 
-    if ((req.protocol + "://" + req.get('host')) === 
-        (((process.env.NODE_ENV === "production") ? "https://" : "http://") + host)) {
+    if ((req.protocol + "://" + req.get('host')) === ("http://" + host)) {
 
         // 인증 키 복호화
         const result = await bcrypt.compareSync( verifyCode, req.query.key );
