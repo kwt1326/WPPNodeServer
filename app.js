@@ -17,26 +17,26 @@ sequelize.sync();
 require('dotenv').config();
 
 // Redis db
-const redis = require('redis');
-let redisstore = require('connect-redis')(session); // dependency to session
-let redisclient = (process.env.NODE_ENV === "production") ? redis.createClient({
-    host : process.env.HOST_REDIS,
-    port : process.env.PORT_REDIS,
-    password : process.env.PW_REDIS,
-}) : null;
+// const redis = require('redis');
+// let redisstore = require('connect-redis')(session); // dependency to session
+// let redisclient = (process.env.NODE_ENV === "production") ? redis.createClient({
+//     host : process.env.HOST_REDIS,
+//     port : process.env.PORT_REDIS,
+//     password : process.env.PW_REDIS,
+// }) : null;
 
-if(process.env.NODE_ENV === "production") {
-    redisclient.unref();
-    redisclient.on('error', console.log);
-}
+// if(process.env.NODE_ENV === "production") {
+//     redisclient.unref();
+//     redisclient.on('error', console.log);
+// }
 
-let store = (process.env.NODE_ENV === "production") ? new redisstore({ 
-    client : redisclient,
-    host : process.env.HOST_REDIS,
-    port : process.env.PORT_REDIS,
-    pass : process.env.PW_REDIS,
-    logErrors : true,
-}) : null;
+// let store = (process.env.NODE_ENV === "production") ? new redisstore({ 
+//     client : redisclient,
+//     host : process.env.HOST_REDIS,
+//     port : process.env.PORT_REDIS,
+//     pass : process.env.PW_REDIS,
+//     logErrors : true,
+// }) : null;
 
 // template engine
 app.set('views', path.join(__dirname, 'views'));
@@ -49,23 +49,23 @@ app.use(express.static(path.join(__dirname, 'public'))); // resource main save p
 app.use(express.static(path.join(__dirname, 'public/images'))); // resource main save place
 app.use(express.urlencoded({extended : false}));
 app.use(cookieparser((process.env.NODE_ENV === "production") ? process.env.COOKIE_SECRET : "localsecret"));
-app.use(session({
-    resave : false,
-    saveUninitialized : false,
-    secret : (process.env.NODE_ENV === "production") ? process.env.COOKIE_SECRET : "localsecret",
-    cookie : {
-        httpOnly : true,
-        secure : false,
-    },
-    store : (process.env.NODE_ENV === "production") ? store : undefined,
-}))
+// app.use(session({
+//     resave : false,
+//     saveUninitialized : false,
+//     secret : (process.env.NODE_ENV === "production") ? process.env.COOKIE_SECRET : "localsecret",
+//     cookie : {
+//         httpOnly : true,
+//         secure : false,
+//     },
+//     store : (process.env.NODE_ENV === "production") ? store : undefined,
+// }))
 
 // flash message
 app.use(flash());
 
 // passport init
 app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.session());
 
 // CORS 
 app.use(cors());

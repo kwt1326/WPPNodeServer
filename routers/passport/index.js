@@ -129,7 +129,6 @@ module.exports = (passport) => {
     },
         async (accessToken, refreshToken, profile, callback) => {
             try {
-                console.log(profile);
                 const email = (profile.email) ? profile.email : profile.id + "@google.com.fakemail";
                 const snsID = profile.id;
                 const provider = "google";

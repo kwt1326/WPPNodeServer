@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 // session cookie login check
 exports.verifyToken = (req, res, next) => {
     try {
+        console.log(req.cookies);
         const id = req.cookies.userdata;
         if(id !== undefined && id !== null) {
             req.decoded = { id : id };
