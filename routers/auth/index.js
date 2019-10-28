@@ -127,6 +127,8 @@ router.patch('/cpw', async (req, res) => {
                 }
             })
 
+            console.log(hashedPW);
+
             await db_user.update({ password : hashedPW }, { where : {email : email} })
             .then(result => {
                 res.send({result : result});
