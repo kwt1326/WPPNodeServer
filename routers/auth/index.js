@@ -32,19 +32,21 @@ router.get('/', verifyToken, function(req,res,next) {
 // local login
 router.post('/login', function(req,res,next) {
     passport.authenticate('local', { // options
-        failureRedirect: (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH + '/login' : "http://localhost:3000/login",
+        failureRedirect: process.env.CLIENT_PATH + 'login',
         successFlash: 'Welcome!',
         failureFlash: 'Fail login!',
         session : false // JWT used
     }, 
     function successRedirect (err, user, info) { // callback redirect (back to origin)
         if(err || !user) {
-            return res.status(500).send("Can't Login process : " + err);
+            console.log("Can't Login process : " + err);
+            return res.redirect(process.env.CLIENT_PATH + 'login');
         }
 
         req.logIn(user, {session : false}, (err) => {
             if(err) {
-                return res.status(500).send("Can't Login process : " + err);
+                console.log("Can't Login process : " + err);
+                return res.redirect(process.env.CLIENT_PATH + 'login');
             }
 
             const token = jwt.sign({
