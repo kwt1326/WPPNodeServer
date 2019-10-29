@@ -18,7 +18,7 @@ require('dotenv').config();
 
 const sessionoption = {
     resave : false,
-    saveUninitialized : true,
+    saveUninitialized : false,
     secret : process.env.COOKIE_SECRET,
     cookie : {
         httpOnly : true,
@@ -32,12 +32,10 @@ if(process.env.NODE_ENV === "production")
 {
     const redis = require('redis');
     const redisStore = require('connect-redis')(session);
-    const redisclient = redis.createClient();
+    const redisclient = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
     redisclient.on('error', err => {console.log(err);});
 
     sessionoption.store = new redisStore({ 
-        host : String(process.env.HOST_REDIS),
-        port : Number(process.env.PORT_REDIS),
         client : redisclient,
     });
 }
