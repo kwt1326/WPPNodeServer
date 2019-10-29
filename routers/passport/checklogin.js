@@ -24,6 +24,7 @@ exports.isNotlogged = (req, res, next) => {
 // session cookie login check
 exports.verifyToken = (req, res, next) => {
     try {
+        console.log(req.session);
         const id = req.session.userdata;
         if(id !== undefined && id !== null) {
             req.decoded = { id : id };
