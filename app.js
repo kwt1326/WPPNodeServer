@@ -27,7 +27,11 @@ const sessionoption = {
         secure : false,
     },
     name: '_aquaclub',
-    store : (process.env.NODE_ENV === "production") ? new FileStore({logFn: function(){}}) : undefined
+}
+
+if(process.env.NODE_ENV === "production") {
+    sessionoption.store = new FileStore();
+    sessionoption.proxy = true;
 }
 
 // production Redis db setting
