@@ -35,18 +35,13 @@ if(process.env.NODE_ENV === "production")
         host: process.env.HOST_REDIS,
         port: process.env.PORT_REDIS,
         password: process.env.PW_REDIS,
+        db:1,
     });
 
     redisclient.unref();
     redisclient.on('error', console.log);
 
-    const store = new redisstore({ 
-        client : redisclient,
-        host : process.env.HOST_REDIS,
-        port : process.env.PORT_REDIS,
-        pass : process.env.PW_REDIS,
-        logErrors : true,
-    });
+    let store = new redisstore({ client : redisclient });
     
     sessionoption['store'] = store;
 }
