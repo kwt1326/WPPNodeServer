@@ -18,26 +18,28 @@ require('dotenv').config();
 
 const sessionoption = {
     resave : false,
-    saveUninitialized : false,
+    saveUninitialized : true,
     secret : process.env.COOKIE_SECRET,
     cookie : {
         httpOnly : true,
         secure : false,
     },
+    name: '_aquaclub',
 }
 
 // production Redis db setting
 if(process.env.NODE_ENV === "production") 
 {
     const redis = require('redis');
-    const RedisStore = require('connect-redis')(session);
-    const cloud = redis.createClient(process.env.PORT_REDIS, process.env.HOST_REDIS, {no_ready_check : true});
-    cloud.on('error', err => {console.log(err)});
-    cloud.auth(process.env.PW_REDIS);
-    cloud.set('userdata', 'default');
-    cloud.set('jwttoken', 'default');
+    const redisStore = require('connect-redis')(session);
+    const redisclient = redis.createClient();
+    redisclient.on('error', err => {console.log(err);});
 
-    sessionoption['store'] = new RedisStore({ client: cloud });
+    sessionoption.store = new redisStore({ 
+        host : String(process.env.HOST_REDIS),
+        port : Number(process.env.PORT_REDIS),
+        client : redisclient,
+    });
 }
 
 // template engine
