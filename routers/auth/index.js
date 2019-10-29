@@ -35,7 +35,6 @@ router.post('/login', function(req,res,next) {
         failureRedirect: process.env.CLIENT_PATH + 'login',
         successFlash: 'Welcome!',
         failureFlash: 'Fail login!',
-        session : false // JWT used
     }, 
     function successRedirect (err, user, info) { // callback redirect (back to origin)
         if(err || !user) {
@@ -43,7 +42,7 @@ router.post('/login', function(req,res,next) {
             return res.redirect(process.env.CLIENT_PATH + 'login');
         }
 
-        req.logIn(user, {session : false}, (err) => {
+        req.logIn(user, null, (err) => {
             if(err) {
                 console.log("Can't Login process : " + err);
                 return res.redirect(process.env.CLIENT_PATH + 'login');
@@ -52,11 +51,11 @@ router.post('/login', function(req,res,next) {
             const token = jwt.sign({
                 id : user.id,
                 level : user.level,
-            }, (process.env.NODE_ENV === "production") ? process.env.JWT_SECRET : 'jwt_lo_secret', {
-                expiresIn : '1h',
-            });
+            }, 
+            process.env.JWT_SECRET, 
+            { expiresIn : '1h', });
 
-            res.cookie('jwttoken', token ); 
+            req.session['jwttoken'] = token; 
             res.redirect(process.env.CLIENT_PATH);
 
         });   
@@ -71,22 +70,20 @@ router.get('/social/google', passport.authenticate('google',
 
 router.get('/facebook/callback', 
     passport.authenticate('facebook', { 
-        failureRedirect: process.env.CLIENT_PATH,
-        session : false,
+        failureRedirect: process.env.CLIENT_PATH
     }), (req,res) => {
         console.log("SUCCESS FACEBOOK LOGGED : ");
-        res.cookie('userdata', req.user.id ); 
+        req.session['userdata'] = req.user.id; 
         res.redirect(String(process.env.CLIENT_PATH));
     }
 );
 
 router.get('/google/callback', 
     passport.authenticate('google', { 
-        failureRedirect: process.env.CLIENT_PATH,
-        session : false,
+        failureRedirect: process.env.CLIENT_PATH
     }), (req,res) => {
         console.log("SUCCESS GOOGLE_OAUTH20 LOGGED : ");
-        res.cookie('userdata', req.user.id ); 
+        req.session['userdata'] = req.user.id; 
         res.redirect(String(process.env.CLIENT_PATH));
     }
 );
@@ -94,9 +91,9 @@ router.get('/google/callback',
 // logout & session destroy
 router.get('/logout', verifyToken, (req, res) => {
     req.logOut();
-    res.clearCookie('userdata');
-    res.clearCookie('jwttoken');
-    res.redirect(process.env.CLIENT_PATH);  
+    req.session.destroy(() => {
+        res.redirect(process.env.CLIENT_PATH);
+    });
     return;
 });
 

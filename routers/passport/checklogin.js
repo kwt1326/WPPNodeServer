@@ -1,20 +1,40 @@
 const jwt = require('jsonwebtoken');
 
+exports.islogged = (req, res, next) => {
+    if(res.isAuthenticated()) {
+        return next();
+    }
+    // if(req.session.passport.user !== undefined || req.session.passport.user !== null) {
+    //     return next();
+    // }
+    else {
+        return res.status(419).send();
+    }
+}
+
+exports.isNotlogged = (req, res, next) => {
+    if(res.isUnauthenticated()) {
+        return next();
+    }
+    else {
+        return res.status(419).send();
+    }
+}
+
 // session cookie login check
 exports.verifyToken = (req, res, next) => {
     try {
-        console.log(req.cookies);
-        const id = req.cookies.userdata;
+        const id = req.session.userdata;
         if(id !== undefined && id !== null) {
             req.decoded = { id : id };
             return next();
         }
         else {
-            if(req.cookies.jwttoken === undefined || req.cookies.jwttoken === null)
+            if(req.session.jwttoken === undefined || req.session.jwttoken === null)
                 return res.status(419).send("Not exist token : error 419");
 
             // first value is innertext
-            let firstparse = req.cookies.jwttoken.split('"');
+            let firstparse = req.session.jwttoken.split('"');
             let token = "";
             firstparse.forEach(elem => {
                 token = (token.length < elem.length) ? elem : token;

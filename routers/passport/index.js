@@ -92,6 +92,7 @@ module.exports = (passport) => {
         callbackURL: process.env.FACEBOOK_CALLBACK,
         profileFields: ['id', 'displayName', 'photos', 'email']
     },
+        // 로그인 기능만 사용시 accessToken, refreshToken 사용 불필요
         async (accessToken, refreshToken, profile, callback) => {
             try {
                 const email = (profile.email) ? profile.email : profile.id + "@facebook.com.fakemail";
