@@ -10,6 +10,8 @@ const sequelize = require('./models').sequelize;
 const passport = require('passport');
 const cors = require('cors');
 
+const FileStore = require('session-file-store')(session);
+
 // DB Sync
 sequelize.sync();
 
@@ -28,16 +30,20 @@ const sessionoption = {
 }
 
 // production Redis db setting
-if(process.env.NODE_ENV === "production") 
-{
-    const redis = require('redis');
-    const redisStore = require('connect-redis')(session);
-    const redisclient = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
-    redisclient.on('error', err => {console.log(err);});
+// if(process.env.NODE_ENV === "production") 
+// {
+//     const redis = require('redis');
+//     const redisStore = require('connect-redis')(session);
+//     const redisclient = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
+//     redisclient.on('error', err => {console.log(err);});
 
-    sessionoption.store = new redisStore({ 
-        client : redisclient,
-    });
+//     sessionoption.store = new redisStore({ 
+//         client : redisclient,
+//     });
+// }
+
+if(process.env.NODE_ENV === "production") {
+    sessionoption.store = new FileStore();
 }
 
 // template engine
