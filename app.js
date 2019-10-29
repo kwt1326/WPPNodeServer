@@ -27,6 +27,7 @@ const sessionoption = {
         secure : false,
     },
     name: '_aquaclub',
+    store : (process.env.NODE_ENV === "production") ? new FileStore({logFn: function(){}}) : undefined
 }
 
 // production Redis db setting
@@ -42,9 +43,6 @@ const sessionoption = {
 //     });
 // }
 
-if(process.env.NODE_ENV === "production") {
-    sessionoption.store = new FileStore({logFn: function(){}});
-}
 
 // template engine
 app.set('views', path.join(__dirname, 'views'));
