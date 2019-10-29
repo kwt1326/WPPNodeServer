@@ -31,17 +31,17 @@ if(process.env.NODE_ENV === "production")
 {
     const redis = require('redis');
     const redisstore = require('connect-redis')(session); // dependency to session
-    const redisclient = redis.createClient({
-        host: process.env.HOST_REDIS,
-        port: process.env.PORT_REDIS,
-        password: process.env.PW_REDIS,
-        db:1,
-    });
+    const redisclient = redis.createClient();
 
     redisclient.unref();
     redisclient.on('error', console.log);
 
-    let store = new redisstore({ client : redisclient });
+    let store = new redisstore({ 
+        host: process.env.HOST_REDIS,
+        port: process.env.PORT_REDIS,
+        pass: process.env.PW_REDIS,
+        client : redisclient,
+    });
     
     sessionoption['store'] = store;
 }
