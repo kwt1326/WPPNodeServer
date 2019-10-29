@@ -43,7 +43,7 @@ const sessionoption = {
 // }
 
 if(process.env.NODE_ENV === "production") {
-    sessionoption.store = new FileStore();
+    sessionoption.store = new FileStore({logFn: function(){}});
 }
 
 // template engine
