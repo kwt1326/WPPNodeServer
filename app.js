@@ -33,6 +33,7 @@ if(process.env.NODE_ENV === "production")
     const RedisStore = require('connect-redis')(session);
     const cloud = redis.createClient(process.env.PORT_REDIS, process.env.HOST_REDIS, {no_ready_check : true});
     cloud.on('error', err => {console.log(err)});
+    cloud.auth(process.env.PW_REDIS);
     cloud.set('userdata', 'default');
     cloud.set('jwttoken', 'default');
 
