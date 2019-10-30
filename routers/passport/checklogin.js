@@ -25,9 +25,13 @@ exports.isNotlogged = (req, res, next) => {
 exports.verifyToken = (req, res, next) => {
     try 
     {
-        req.decoded = { id : req.session.passport.user };
-        console.log(`user id : ${req.decoded.id}`);
-        return next();
+        if(req.session.passport.user) {
+            req.decoded = { id : req.session.passport.user };
+            console.log(`user id : ${req.decoded.id}`);
+            return next();
+        }
+        else
+            res.status(404).send("haven't session id : " + err);
     
         // let session = null;
 
