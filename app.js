@@ -67,7 +67,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const laidx = String(process.env.CLIENT_PATH).lastIndexOf('/');
-const accessorigin = String(process.env.CLIENT_PATH).substr(laidx, 1);
+const accessorigin = String(process.env.CLIENT_PATH).substring(0, laidx);
 console.log(accessorigin);
 
 // CORS 
