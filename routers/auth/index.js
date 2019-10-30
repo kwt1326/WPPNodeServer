@@ -58,8 +58,8 @@ router.post('/login', function(req,res,next) {
             req.session['jwttoken'] = token; 
             req.session.save(err => {
                 if(err) console.log(err);
-                console.log(req.session);
-                res.redirect(process.env.CLIENT_PATH)
+                console.log(req.sessionID);
+                res.redirect(String(process.env.CLIENT_PATH) + `?sid=${req.sessionID}`);
             });
         });   
     })(req,res);        
@@ -79,7 +79,7 @@ router.get('/facebook/callback',
         req.session['userdata'] = req.user.id; 
         req.session.save(err => {
             if(err) console.log(err);
-            res.redirect(String(process.env.CLIENT_PATH))
+            res.redirect(String(process.env.CLIENT_PATH) + `/?sid=${req.sessionID}`);
         });
     }
 );
@@ -92,7 +92,7 @@ router.get('/google/callback',
         req.session['userdata'] = req.user.id; 
         req.session.save(err => {
             if(err) console.log(err);
-            res.redirect(String(process.env.CLIENT_PATH));
+            res.redirect(String(process.env.CLIENT_PATH) + `/?sid=${req.sessionID}`);
         });
     }
 );

@@ -23,19 +23,43 @@ exports.isNotlogged = (req, res, next) => {
 
 // session cookie login check
 exports.verifyToken = (req, res, next) => {
-    try {
-        console.log(req.session);
-        const id = req.session.userdata;
+    try 
+    {
+        let session = null;
+
+        console.log(req.signedCookies['_aquaclub']);
+        if(process.env.NODE_ENV === "production") {
+            const sessionId = req.signedCookies['_aquaclub'];
+            console.log(sessionId);
+            if(req.sessionStore) {
+                req.sessionStore.get(sessionId, (err, sess) => {
+                    if(err) {
+                        console.log("haven't session id : " + err);
+                        res.status(404).send("haven't session id : " + err);
+                    }
+                    else if(sess) {
+                        //req.sessionStore.createSession(req, sess);
+                        session = sess;
+                    }
+                });
+            }
+        }
+        else {
+            session = req.session;
+        }
+
+        console.log(session);
+        const id = session.userdata;
         if(id !== undefined && id !== null) {
             req.decoded = { id : id };
             return next();
         }
         else {
-            if(req.session.jwttoken === undefined || req.session.jwttoken === null)
+            if(session.jwttoken === undefined || session.jwttoken === null)
                 return res.status(419).send("Not exist token : error 419");
 
             // first value is innertext
-            let firstparse = req.session.jwttoken.split('"');
+            let firstparse = session.jwttoken.split('"');
             let token = "";
             firstparse.forEach(elem => {
                 token = (token.length < elem.length) ? elem : token;

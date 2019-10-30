@@ -58,12 +58,16 @@ app.use(session(sessionoption));
 // flash message
 app.use(flash());
 
+// helmet security
+const helmet = require('helmet');
+app.use(helmet());
+
 // passport init
 app.use(passport.initialize());
 app.use(passport.session());
 
 // CORS 
-app.use(cors());
+app.use(cors({credentials: true}));
 
 // router
 const router = require('./routers/index');
