@@ -58,6 +58,7 @@ router.post('/login', function(req,res,next) {
             req.session['jwttoken'] = token; 
             req.session.save(err => {
                 if(err) console.log(err);
+                console.log(req.session);
                 res.redirect(process.env.CLIENT_PATH)
             });
         });   
