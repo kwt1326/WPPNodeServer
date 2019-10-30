@@ -56,8 +56,10 @@ router.post('/login', function(req,res,next) {
             { expiresIn : '1h', });
 
             req.session['jwttoken'] = token; 
-            res.redirect(process.env.CLIENT_PATH);
-
+            req.session.save(err => {
+                if(err) console.log(err);
+                res.redirect(process.env.CLIENT_PATH)
+            });
         });   
     })(req,res);        
 });
@@ -74,7 +76,10 @@ router.get('/facebook/callback',
     }), (req,res) => {
         console.log("SUCCESS FACEBOOK LOGGED : ");
         req.session['userdata'] = req.user.id; 
-        res.redirect(String(process.env.CLIENT_PATH));
+        req.session.save(err => {
+            if(err) console.log(err);
+            res.redirect(String(process.env.CLIENT_PATH))
+        });
     }
 );
 
@@ -84,7 +89,10 @@ router.get('/google/callback',
     }), (req,res) => {
         console.log("SUCCESS GOOGLE_OAUTH20 LOGGED : ");
         req.session['userdata'] = req.user.id; 
-        res.redirect(String(process.env.CLIENT_PATH));
+        req.session.save(err => {
+            if(err) console.log(err);
+            res.redirect(String(process.env.CLIENT_PATH));
+        });
     }
 );
 
