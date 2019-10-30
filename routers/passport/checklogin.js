@@ -27,7 +27,8 @@ exports.verifyToken = (req, res, next) => {
     {
         req.decoded = { id : req.session.passport.user };
         console.log(`user id : ${req.decoded.id}`);
-
+        return next();
+    
         // let session = null;
 
         // console.log("cookie : ");
