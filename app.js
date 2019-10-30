@@ -16,6 +16,7 @@ sequelize.sync();
 // CORS 
 app.use(cors({
     credentials: true,
+    origin : '*'
 }));
 
 // env parser
