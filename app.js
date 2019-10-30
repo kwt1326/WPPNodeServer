@@ -46,12 +46,12 @@ if(process.env.NODE_ENV === "production")
         {no_ready_check: true}
     );
     redisclient.on('error', err => {console.log(err);});
-    redisclient.auth(process.env.PW_REDIS, (err) => {
-        if(err) console.log(err); else console.log("Success Assigned")
-    });
     
     sessionoption.store = new redisStore({ 
         client : redisclient,
+        port : process.env.PORT_REDIS,
+        host : process.env.HOST_REDIS,
+        pass : process.env.PW_REDIS,
     });
 }
 
