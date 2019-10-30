@@ -79,7 +79,7 @@ router.get('/facebook/callback',
         req.session['userdata'] = req.user.id; 
         req.session.save(err => {
             if(err) console.log(err);
-            res.redirect(String(process.env.CLIENT_PATH) + `/?sid=${req.sessionID}`);
+            res.redirect(String(process.env.CLIENT_PATH) + `?sid=${req.sessionID}`);
         });
     }
 );
@@ -92,7 +92,7 @@ router.get('/google/callback',
         req.session['userdata'] = req.user.id; 
         req.session.save(err => {
             if(err) console.log(err);
-            res.redirect(String(process.env.CLIENT_PATH) + `/?sid=${req.sessionID}`);
+            res.redirect(String(process.env.CLIENT_PATH) + `?sid=${req.sessionID}`);
         });
     }
 );

@@ -27,6 +27,7 @@ exports.verifyToken = (req, res, next) => {
     {
         let session = null;
 
+        console.log("cookie : ");
         console.log(req.signedCookies['_aquaclub']);
         if(process.env.NODE_ENV === "production") {
             const sessionId = req.signedCookies['_aquaclub'];
@@ -48,6 +49,7 @@ exports.verifyToken = (req, res, next) => {
             session = req.session;
         }
 
+        console.log("session :");
         console.log(session);
         const id = session.userdata;
         if(id !== undefined && id !== null) {
