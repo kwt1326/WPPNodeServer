@@ -14,7 +14,12 @@ const cors = require('cors');
 sequelize.sync();
 
 // CORS 
-app.use(cors());
+app.use(cors({
+    credentials : true,
+    origin : ['https://www.aquaclub.club',
+        'https://www.aquaclub.club/',
+        'aquaclub.club'],
+}));
 
 // env parser
 require('dotenv').config();

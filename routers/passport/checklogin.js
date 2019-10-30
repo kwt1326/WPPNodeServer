@@ -24,62 +24,54 @@ exports.isNotlogged = (req, res, next) => {
 // session cookie login check
 exports.verifyToken = (req, res, next) => {
     try 
-    {
-        if(req.session.passport.user) {
-            req.decoded = { id : req.session.passport.user };
-            console.log(`user id : ${req.decoded.id}`);
+    {    
+        let session = null;
+
+        console.log("cookie : " + req.signedCookies['_aquaclub']);
+        if(process.env.NODE_ENV === "production") {
+            const sessionId = req.signedCookies['_aquaclub'];
+            console.log(sessionId);
+            if(req.sessionStore) {
+                req.sessionStore.get(sessionId, (err, sess) => {
+                    if(err) {
+                        console.log("haven't session id : " + err);
+                        res.status(404).send("haven't session id : " + err);
+                    }
+                    else if(sess) {
+                        req.sessionStore.createSession(req, sess);
+                        req.sessionStore.get(sessionId, (err, sess) => {
+                            session = sess;
+                        });
+                    }
+                });
+            }
+        }
+        else {
+            session = req.session;
+        }
+
+        console.log("session :");
+        console.log(session);
+        const id = session.userdata;
+        if(id !== undefined && id !== null) {
+            req.decoded = { id : id };
             return next();
         }
-        else
-            res.status(404).send("haven't session id : " + err);
-    
-        // let session = null;
+        else {
+            if(session.jwttoken === undefined || session.jwttoken === null)
+                return res.status(419).send("Not exist token : error 419");
 
-        // console.log("cookie : ");
-        // if(process.env.NODE_ENV === "production") {
-        //     const sessionId = req.signedCookies['_aquaclub'];
-        //     console.log(sessionId);
-        //     if(req.sessionStore) {
-        //         req.sessionStore.get(sessionId, (err, sess) => {
-        //             if(err) {
-        //                 console.log("haven't session id : " + err);
-        //                 res.status(404).send("haven't session id : " + err);
-        //             }
-        //             else if(sess) {
-        //                 req.sessionStore.createSession(req, sess);
-        //                 req.sessionStore.get(sessionId, (err, sess) => {
-        //                     session = sess;
-        //                 });
-        //             }
-        //         });
-        //     }
-        // }
-        // else {
-        //     session = req.session;
-        // }
+            // first value is innertext
+            let firstparse = session.jwttoken.split('"');
+            let token = "";
+            firstparse.forEach(elem => {
+                token = (token.length < elem.length) ? elem : token;
+            });
 
-        // console.log("session :");
-        // console.log(session);
-        // const id = session.userdata;
-        // if(id !== undefined && id !== null) {
-        //     req.decoded = { id : id };
-        //     return next();
-        // }
-        // else {
-        //     if(session.jwttoken === undefined || session.jwttoken === null)
-        //         return res.status(419).send("Not exist token : error 419");
-
-        //     // first value is innertext
-        //     let firstparse = session.jwttoken.split('"');
-        //     let token = "";
-        //     firstparse.forEach(elem => {
-        //         token = (token.length < elem.length) ? elem : token;
-        //     });
-
-        //     const secret = (process.env.NODE_ENV === "production") ? process.env.JWT_SECRET : "jwt_lo_secret";
-        //     req.decoded = jwt.verify(token, secret);
-        //     return next();
-        // }
+            const secret = (process.env.NODE_ENV === "production") ? process.env.JWT_SECRET : "jwt_lo_secret";
+            req.decoded = jwt.verify(token, secret);
+            return next();
+        }
     }
     catch (err) {
         if(error.name === 'TokenExpiredError') { // 유효시간 초과

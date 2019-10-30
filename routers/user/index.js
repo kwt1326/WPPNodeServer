@@ -8,7 +8,7 @@ const router = express.Router(); // INDEX ROUTER
 
 router.get('/', verifyToken, function (req, res, next) {
 
-   const id = req.session.passport.user;
+   const id = req.decoded.id;
 
    if(id === undefined || id === null)
       return res.status(404).send("invalid id");
