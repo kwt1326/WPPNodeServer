@@ -13,15 +13,9 @@ const cors = require('cors');
 // DB Sync
 sequelize.sync();
 
-const laidx_c = String(process.env.CLIENT_PATH).lastIndexOf('/');
-const laidx_a = String(process.env.CLIENT_PATH).lastIndexOf('/');
-const accessorigin_c = String(process.env.CLIENT_PATH).substring(0, laidx_c);
-const accessorigin_a = String(process.env.CLIENT_PATH).substring(0, laidx_a);
-
 // CORS 
 app.use(cors({
     credentials: true,
-    origin : [accessorigin_c, accessorigin_a],
 }));
 
 // env parser
