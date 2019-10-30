@@ -66,6 +66,9 @@ app.use(helmet());
 app.use(passport.initialize());
 app.use(passport.session());
 
+const accessorigin = String(process.env.CLIENT_PATH).split('/')[0];
+console.log(accessorigin);
+
 // CORS 
 app.use(cors({
     credentials: true,
