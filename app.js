@@ -8,18 +8,13 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const sequelize = require('./models').sequelize;
 const passport = require('passport');
+const cors = require('cors');
 
 // DB Sync
 sequelize.sync();
 
 // CORS 
-app.all('/*', function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*' /*'https://www.aquaclub.club'*/);
-    res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, PATCH, UPDATE, DELETE');
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
-    //res.header('Access-Control-Allow-Credentials', true);
-    next();
-});
+app.use(cors());
 
 // env parser
 require('dotenv').config();
