@@ -67,7 +67,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // CORS 
-app.use(cors({credentials: true}));
+app.use(cors({
+    credentials: true,
+    origin : String(process.env.CLIENT_PATH).split('/')[0],
+}));
 
 // router
 const router = require('./routers/index');
