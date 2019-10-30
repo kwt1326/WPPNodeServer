@@ -13,6 +13,18 @@ const cors = require('cors');
 // DB Sync
 sequelize.sync();
 
+const laidx_c = String(process.env.CLIENT_PATH).lastIndexOf('/');
+const laidx_a = String(process.env.CLIENT_PATH).lastIndexOf('/');
+const accessorigin_c = String(process.env.CLIENT_PATH).substring(0, laidx_c);
+const accessorigin_a = String(process.env.CLIENT_PATH).substring(0, laidx_a);
+console.log(accessorigin);
+
+// CORS 
+app.use(cors({
+    credentials: true,
+    origin : [accessorigin_c, accessorigin_a],
+}));
+
 // env parser
 require('dotenv').config();
 
@@ -65,18 +77,6 @@ app.use(helmet());
 // passport init
 app.use(passport.initialize());
 app.use(passport.session());
-
-const laidx_c = String(process.env.CLIENT_PATH).lastIndexOf('/');
-const laidx_a = String(process.env.CLIENT_PATH).lastIndexOf('/');
-const accessorigin_c = String(process.env.CLIENT_PATH).substring(0, laidx_c);
-const accessorigin_a = String(process.env.CLIENT_PATH).substring(0, laidx_a);
-console.log(accessorigin);
-
-// CORS 
-app.use(cors({
-    credentials: true,
-    origin : [accessorigin_c, accessorigin_a],
-}));
 
 // router
 const router = require('./routers/index');
