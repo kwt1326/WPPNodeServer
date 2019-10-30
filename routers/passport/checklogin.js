@@ -28,7 +28,6 @@ exports.verifyToken = (req, res, next) => {
         let session = null;
 
         console.log("cookie : ");
-        console.log(req.signedCookies);
         if(process.env.NODE_ENV === "production") {
             const sessionId = req.signedCookies['_aquaclub'];
             console.log(sessionId);
@@ -39,8 +38,10 @@ exports.verifyToken = (req, res, next) => {
                         res.status(404).send("haven't session id : " + err);
                     }
                     else if(sess) {
-                        //req.sessionStore.createSession(req, sess);
-                        session = sess;
+                        req.sessionStore.createSession(req, sess);
+                        req.sessionStore.get(sessionId, (err, sess) => {
+                            session = sess;
+                        });
                     }
                 });
             }

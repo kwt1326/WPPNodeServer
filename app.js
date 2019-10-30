@@ -66,13 +66,14 @@ app.use(helmet());
 app.use(passport.initialize());
 app.use(passport.session());
 
-const accessorigin = String(process.env.CLIENT_PATH).split('/')[0];
+const laidx = String(process.env.CLIENT_PATH).lastIndexOf('/');
+const accessorigin = String(process.env.CLIENT_PATH).substring(laidx, 1);
 console.log(accessorigin);
 
 // CORS 
 app.use(cors({
     credentials: true,
-    origin : String(process.env.CLIENT_PATH).split('/')[0],
+    origin : accessorigin,
 }));
 
 // router
