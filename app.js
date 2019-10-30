@@ -53,6 +53,7 @@ if(process.env.NODE_ENV === "production")
     sessionoption.store = new redisStore({ 
         client : redisclient,
         disableTTL : true,
+        ttl : 80000,
     });
 }
 
