@@ -4,7 +4,7 @@ const app = express();
 const cookieparser = require('cookie-parser');
 const logger = require('morgan');
 const path = require('path');
-const session = require('express-session');
+//const session = require('express-session');
 const flash = require('connect-flash');
 const sequelize = require('./models').sequelize;
 const passport = require('passport');
@@ -14,40 +14,35 @@ const cors = require('cors');
 sequelize.sync();
 
 // CORS 
-app.use(cors({
-    credentials : true,
-    origin : ['https://www.aquaclub.club',
-        'https://www.aquaclub.club/',
-        'aquaclub.club'],
-}));
+app.use(cors());
 
 // env parser
 require('dotenv').config();
 
-const sessionoption = {
-    resave : false,
-    saveUninitialized : false,
-    secret : process.env.COOKIE_SECRET,
-    cookie : {
-        httpOnly : true,
-        secure : false,
-    },
-    name: '_aquaclub',
-}
+// const sessionoption = {
+//     resave : false,
+//     saveUninitialized : false,
+//     secret : process.env.COOKIE_SECRET,
+//     cookie : {
+//         httpOnly : true,
+//         secure : false,
+//     },
+//     name: '_aquaclub',
+// }
 
 //production Redis db setting
-if(process.env.NODE_ENV === "production") 
-{
-    console.log("Start redis access");
-    const redisStore = require('connect-redis')(session);
+// if(process.env.NODE_ENV === "production") 
+// {
+//     console.log("Start redis access");
+//     const redisStore = require('connect-redis')(session);
     
-    sessionoption.store = new redisStore({ 
-        host : process.env.HOST_REDIS, 
-        port : process.env.PORT_REDIS,
-        pass : process.env.PW_REDIS,
-        logErrors : true,
-    });
-}
+//     sessionoption.store = new redisStore({ 
+//         host : process.env.HOST_REDIS, 
+//         port : process.env.PORT_REDIS,
+//         pass : process.env.PW_REDIS,
+//         logErrors : true,
+//     });
+// }
 
 
 // template engine
@@ -61,7 +56,7 @@ app.use(express.static(path.join(__dirname, 'public'))); // resource main save p
 app.use(express.static(path.join(__dirname, 'public/images'))); // resource main save place
 app.use(express.urlencoded({extended : false}));
 app.use(cookieparser(process.env.COOKIE_SECRET));
-app.use(session(sessionoption));
+//app.use(session(sessionoption));
 
 // flash message
 app.use(flash());
@@ -72,7 +67,7 @@ app.use(helmet());
 
 // passport init
 app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.session());
 
 // router
 const router = require('./routers/index');

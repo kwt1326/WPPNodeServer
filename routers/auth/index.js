@@ -35,6 +35,7 @@ router.post('/login', function(req,res,next) {
         failureRedirect: process.env.CLIENT_PATH + 'login',
         successFlash: 'Welcome!',
         failureFlash: 'Fail login!',
+        session : false
     }, 
     function successRedirect (err, user, info) { // callback redirect (back to origin)
         if(err || !user) {
@@ -55,12 +56,7 @@ router.post('/login', function(req,res,next) {
             process.env.JWT_SECRET, 
             { expiresIn : '1h', });
 
-            req.session['jwttoken'] = token; 
-            req.session.save(err => {
-                if(err) console.log(err);
-                console.log(req.sessionID);
-                res.redirect(String(process.env.CLIENT_PATH) + `?sid=${req.sessionID}`);
-            });
+            res.redirect(String(process.env.CLIENT_PATH) + `?token=${token}`);
         });   
     })(req,res);        
 });
@@ -73,36 +69,43 @@ router.get('/social/google', passport.authenticate('google',
 
 router.get('/facebook/callback', 
     passport.authenticate('facebook', { 
-        failureRedirect: process.env.CLIENT_PATH
+        failureRedirect: process.env.CLIENT_PATH,
+        session : false
     }), (req,res) => {
         console.log("SUCCESS FACEBOOK LOGGED : ");
-        req.session['userdata'] = req.user.id; 
-        req.session.save(err => {
-            if(err) console.log(err);
-            res.redirect(String(process.env.CLIENT_PATH) + `?sid=${req.sessionID}`);
-        });
+        console.log(req.user);
+        const token = jwt.sign({
+            id : req.user.id,
+            level : req.user.level,
+        }, 
+        process.env.JWT_SECRET, 
+        { expiresIn : '1h', });
+
+        res.redirect(String(process.env.CLIENT_PATH) + `?token=${token}`);
     }
 );
 
 router.get('/google/callback', 
     passport.authenticate('google', { 
-        failureRedirect: process.env.CLIENT_PATH
+        failureRedirect: process.env.CLIENT_PATH,
+        session : false
     }), (req,res) => {
         console.log("SUCCESS GOOGLE_OAUTH20 LOGGED : ");
-        req.session['userdata'] = req.user.id; 
-        req.session.save(err => {
-            if(err) console.log(err);
-            res.redirect(String(process.env.CLIENT_PATH) + `?sid=${req.sessionID}`);
-        });
+        const token = jwt.sign({
+            id : req.user.id,
+            level : req.user.level,
+        }, 
+        process.env.JWT_SECRET, 
+        { expiresIn : '1h', });
+
+        res.redirect(String(process.env.CLIENT_PATH) + `?token=${token}`);
     }
 );
 
 // logout & session destroy
 router.get('/logout', verifyToken, (req, res) => {
     req.logOut();
-    req.session.destroy(() => {
-        res.redirect(process.env.CLIENT_PATH);
-    });
+    res.redirect(process.env.CLIENT_PATH);
     return;
 });
 

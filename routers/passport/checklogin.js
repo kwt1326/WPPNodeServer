@@ -23,55 +23,26 @@ exports.isNotlogged = (req, res, next) => {
 
 // session cookie login check
 exports.verifyToken = (req, res, next) => {
-    try 
-    {    
-        let session = null;
+    try {    
+        let token = req.headers.authorization;
+        if(token === undefined || token === null)
+            return res.status(419).send("invalid token : error 419");
 
-        console.log("cookie : " + req.signedCookies['_aquaclub']);
-        if(process.env.NODE_ENV === "production") {
-            const sessionId = req.signedCookies['_aquaclub'];
-            console.log(sessionId);
-            if(req.sessionStore) {
-                req.sessionStore.get(sessionId, (err, sess) => {
-                    if(err) {
-                        console.log("haven't session id : " + err);
-                        res.status(404).send("haven't session id : " + err);
-                    }
-                    else if(sess) {
-                        req.sessionStore.createSession(req, sess);
-                        req.sessionStore.get(sessionId, (err, sess) => {
-                            session = sess;
-                        });
-                    }
-                });
+        // first value is innertext
+        if(token.startsWith('Bearer')) {
+            token = token.replace('Bearer ', '');
+            if(token.startsWith('null')) {
+                console.log('invalid token : null token');
+                return res.status(419).send("invalid token : error 419");
             }
         }
-        else {
-            session = req.session;
-        }
+        else
+            return res.status(419).send("invalid token : error 419");
 
-        console.log("session :");
-        console.log(session);
-        const id = session.userdata;
-        if(id !== undefined && id !== null) {
-            req.decoded = { id : id };
-            return next();
-        }
-        else {
-            if(session.jwttoken === undefined || session.jwttoken === null)
-                return res.status(419).send("Not exist token : error 419");
-
-            // first value is innertext
-            let firstparse = session.jwttoken.split('"');
-            let token = "";
-            firstparse.forEach(elem => {
-                token = (token.length < elem.length) ? elem : token;
-            });
-
-            const secret = (process.env.NODE_ENV === "production") ? process.env.JWT_SECRET : "jwt_lo_secret";
-            req.decoded = jwt.verify(token, secret);
-            return next();
-        }
+        // token parse
+        const secret = process.env.JWT_SECRET;
+        req.decoded = jwt.verify(token, secret);
+        return next();
     }
     catch (err) {
         if(error.name === 'TokenExpiredError') { // 유효시간 초과
@@ -79,8 +50,8 @@ exports.verifyToken = (req, res, next) => {
             return res.status(419).send("expired token : error 419");
         }
         else {
-            console.log("invalid token : error 401");
-            return res.status(401).send("invalid token : error 401");
+            console.log(err);
+            return res.status(419).send(err);
         }
     }
 }
