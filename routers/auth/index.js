@@ -105,7 +105,7 @@ router.get('/google/callback',
 // logout & session destroy
 router.get('/logout', verifyToken, (req, res) => {
     req.logOut();
-    res.redirect(process.env.CLIENT_PATH);
+    res.send({result : true});
     return;
 });
 
