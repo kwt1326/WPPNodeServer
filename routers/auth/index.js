@@ -54,7 +54,7 @@ router.post('/login', function(req,res,next) {
                 level : user.level,
             }, 
             process.env.JWT_SECRET, 
-            { expiresIn : '1h', });
+            { expiresIn : '1m'/*'1h'*/, });
 
             res.redirect(String(process.env.CLIENT_PATH) + `?token=${token}`);
         });   

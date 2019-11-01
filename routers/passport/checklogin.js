@@ -42,12 +42,14 @@ exports.verifyToken = (req, res, next) => {
         // token parse
         const secret = process.env.JWT_SECRET;
         req.decoded = jwt.verify(token, secret);
+        console.log(req.decoded);
         return next();
     }
     catch (err) {
-        if(error.name === 'TokenExpiredError') { // 유효시간 초과
+        console.log(err);
+        if(err.name === 'TokenExpiredError') { // 유효시간 초과
             console.log("expired token : error 419");
-            return res.status(419).send("expired token : error 419");
+            return res.status(419).send({ expired : true, msg : "expired token : error 419" });
         }
         else {
             console.log(err);
