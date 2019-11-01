@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const cloudinary = require('cloudinary');
 const { verifyToken } = require('../passport/checklogin');
 
 const fs = require('fs');
@@ -33,6 +34,20 @@ router.post('/', verifyToken, uploadSetting.single('img'), (err, req, res, next)
 router.post('/', verifyToken, uploadSetting.single('img'), (req, res) => {
     console.log("UPLOAD file : " + req.file);
     res.send({ url: req.file.filename })
+})
+
+// production - cloudinary uploader
+router.post('/ci', verifyToken, (req,res) => {
+    const file = req.file;
+    console.log(file);
+
+    const ext = path.extname(file.originalname);
+    const newName = path.basename(file.originalname, ext) + Date.now() + ext;
+
+    cloudinary.uploader.upload(file.originalname, function(result) { 
+        console.log(result) 
+        res.send({url : newName});
+    }, {public_id: newName})
 })
 
 router.delete('/', verifyToken, (req,res) => {
