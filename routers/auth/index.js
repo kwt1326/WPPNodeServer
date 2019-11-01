@@ -54,7 +54,7 @@ router.post('/login', function(req,res,next) {
                 level : user.level,
             }, 
             process.env.JWT_SECRET, 
-            { expiresIn : '1m'/*'1h'*/, });
+            { expiresIn : '6h', });
 
             res.redirect(String(process.env.CLIENT_PATH) + `?token=${token}`);
         });   
@@ -79,7 +79,7 @@ router.get('/facebook/callback',
             level : req.user.level,
         }, 
         process.env.JWT_SECRET, 
-        { expiresIn : '1h', });
+        { expiresIn : '6h', });
 
         res.redirect(String(process.env.CLIENT_PATH) + `?token=${token}`);
     }
@@ -96,7 +96,7 @@ router.get('/google/callback',
             level : req.user.level,
         }, 
         process.env.JWT_SECRET, 
-        { expiresIn : '1h', });
+        { expiresIn : '6h', });
 
         res.redirect(String(process.env.CLIENT_PATH) + `?token=${token}`);
     }
