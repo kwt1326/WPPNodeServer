@@ -39,12 +39,11 @@ router.post('/', verifyToken, uploadSetting.single('img'), (req, res) => {
 // production - cloudinary uploader
 router.post('/ci', verifyToken, uploadSetting.single('img'), (req,res) => {
     const file = req.file;
-    console.log(req);
 
     const ext = path.extname(file.originalname);
     const newName = path.basename(file.originalname, ext) + Date.now() + ext;
 
-    cloudinary._upload_file.upload(file.originalname, function(result) { 
+    cloudinary.uploader.upload(file.originalname, function(result) { 
         console.log(result) 
         res.send({url : newName});
     }, {public_id: newName})
