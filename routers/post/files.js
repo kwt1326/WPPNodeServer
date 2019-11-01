@@ -41,9 +41,9 @@ router.post('/ci', verifyToken, uploadSetting.single('img'), (req,res) => {
     const file = req.file;
     const ext = path.extname(file.originalname);
     const newName = path.basename(file.originalname, ext) + Date.now();
+    console.log("UPLOAD file : " + req.file);
 
     cloudinary.uploader.upload(file.path, function(result) { 
-        console.log(result) 
         res.send({url : result.url});
     }, {public_id: newName})
 })
