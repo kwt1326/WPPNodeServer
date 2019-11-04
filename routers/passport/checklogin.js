@@ -42,7 +42,6 @@ exports.verifyToken = (req, res, next) => {
         // token parse
         const secret = process.env.JWT_SECRET;
         req.decoded = jwt.verify(token, secret);
-        console.log(req.decoded);
         return next();
     }
     catch (err) {

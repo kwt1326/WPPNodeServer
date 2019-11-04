@@ -26,15 +26,15 @@ module.exports = (passport) => {
             .catch(err => done(err));
     });
 
-    // Auth jwt token
+    // Auth jwt token // 이것을 사용해도 좋지만, 수작업으로 파싱 로직을 만들었다.
     passport.use(new jwtStrategy({
             jwtFromRequest: extStrategy.fromAuthHeaderAsBearerToken(),
-            secretOrKey   : (process.env.NODE_ENV === "production") ? process.env.JWT_SECRET : 'jwt_lo_secret',
-            issuer : (process.env.NODE_ENV === "production") ? process.env.CLIENT_PATH : 'http://localhost:3000',
-            audience : (process.env.NODE_ENV === "production") ? process.env.API_PATH : 'http://localhost:3500',
+            secretOrKey   : process.env.JWT_SECRET,
+            issuer : process.env.CLIENT_PATH,
+            audience : process.env.API_PATH,
         },
         function (user, callback) {
-            //console.log("PAYLOAD : " + user);
+            console.log("PAYLOAD : " + user);
             return db_user.findOne({where : {id : user.id}})
                 .then(find_user => {
                     return callback(null, find_user);

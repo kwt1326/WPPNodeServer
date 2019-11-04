@@ -17,8 +17,9 @@ router.get('/', verifyToken, function (req, res, next)
     const guid = req.query.guid;
     const id = req.decoded.id;
 
-    const process = async () => {
-        return await db_post.findOne({ include: { model : db_comment, where : { postId : guid } } })
+    if(guid !== undefined && guid !== null)
+    {
+        db_post.findOne({ include: { model : db_comment, where : { postId : guid } } })
         .then(response => {
             console.log(response);
             res.send({ data : response.comments });
@@ -28,9 +29,6 @@ router.get('/', verifyToken, function (req, res, next)
             res.send({ data : 'none' });
         })
     }
-
-    if(guid !== undefined && guid !== null)
-        process();          
 });
 
 // 2. comment Apply (POST)
@@ -41,10 +39,8 @@ router.post('/', verifyToken, function(req, res, next)
     const content = req.query.content;
     const id = req.decoded.id;
 
-    console.log(id);
-
-    const process = async () => {
-        await db_comment.create({
+    if(content && guid && postid && id) {
+        db_comment.create({
             guid : guid,
             writer : parseInt(id),
             content : content,
@@ -58,14 +54,10 @@ router.post('/', verifyToken, function(req, res, next)
             res.status(404).send('Not found Data : Comment');
         });    
     }
-
-    if(!content || !guid || !postid || !id) {
+    else {
         console.log("FAIL APPLY COMMENT");
         res.status(404).send();
-        return;
     }
-
-    process();          
 });
 
 // 3. comment Edit (PATCH)
@@ -74,8 +66,8 @@ router.patch('/', verifyToken, function(req, res, next)
     const id = req.decoded.id;
     const guid = req.query.guid;
 
-    const process = async () => {
-        return await db_comment.update({
+    if(guid && req.query.content) {
+        db_comment.update({
             content: req.query.content,
         }, { where: { 
                 guid : guid, 
@@ -94,10 +86,6 @@ router.patch('/', verifyToken, function(req, res, next)
             res.status(404).send("Can't update comment");
         });
     }
-
-    if(guid && req.query.content) {
-        process();
-    }
 });
 
 // 4. comment Delete (DELETE)
@@ -106,8 +94,8 @@ router.delete('/', verifyToken, function(req, res, next)
     const id = req.decoded.id;
     const guid = req.query.guid;
 
-    const process = async () => {
-        return await db_comment.destroy({ where: { guid : guid, writer : id } })
+    if(guid) {
+        db_comment.destroy({ where: { guid : guid, writer : id } })
         .then(response => {
             if(!response) {
                 res.status(404).send("Wasn't destroid comment (maybe, you aren't writer)");
@@ -119,10 +107,6 @@ router.delete('/', verifyToken, function(req, res, next)
             console.log("Can't destroy comment : " + err);
             res.status(404).send();
         });
-    }
-
-    if(guid) {
-        process();
     }
 });
 

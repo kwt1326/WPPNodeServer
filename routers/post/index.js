@@ -183,7 +183,7 @@ router.get('/list', function(req,res,next)
             row_count = res;
         })
 
-        let rows = [];
+        //let rows = [];
         let ofs = page * 10;
         let pageleng = 10;
 
@@ -194,29 +194,37 @@ router.get('/list', function(req,res,next)
             order: [['createdAt', 'DESC']],
         })
         .then(result => {
-            async function getrows () {
-                for(let i = 0 ; i < result.length ; ++i) {
-                    await db_user.findOne({ where: { id: result[i].userId } })
-                    .then(result_user => {
-                        rows[i] = {
-                            content: result[i],
-                            writer: result_user.nickname
-                        }
-                    })
-                }    
-            }
+            // 작성자 추출 로직 ( 불필요 하여 주석 처리 )
+            // async function getrows () {
+            //     for(let i = 0 ; i < result.length ; ++i) {
+            //         await db_user.findOne({ where: { id: result[i].userId } })
+            //         .then(result_user => {
+            //             rows[i] = {
+            //                 content: result[i],
+            //                 writer: result_user.nickname
+            //             }
+            //         })
+            //     }    
+            // }
 
-            async function send () {
-                await getrows();
-                res.send({
-                    result: true,
-                    ofs: row_count - (page * 10),
-                    count: row_count,
-                    rows: rows,
-                });        
-            }
+            // async function send () {
+            //     await getrows();
+            //     res.send({
+            //         result: true,
+            //         ofs: row_count - (page * 10),
+            //         count: row_count,
+            //         rows: rows,
+            //     });        
+            // }
 
-            send();
+            // send();
+
+            res.send({
+                result: true,
+                ofs: row_count - (page * 10),
+                count: row_count,
+                rows: result,
+            });        
         })
     }
 
@@ -434,6 +442,32 @@ router.get('/reading', function (req, res, next)
 
     if(guid)
         process();          
+});
+
+// other 3. simple archive list
+router.get('/archive', function(req,res,next) 
+{
+    const page = req.query.page;
+    console.log(page);
+    let ofs = page * 10;
+    let pageleng = 10;
+
+    db_post.findAll({
+        attributes: [
+            'content', 'hashtag', 'title', 
+            'guid', 'views', 'hearts', 'frontimg'
+        ],
+        offset : ofs,
+        limit : pageleng,
+        where : null,
+        order: [['createdAt', 'DESC']],
+    })
+    .then(result => {
+        res.send(result);
+    })
+    .catch(err => {
+        console.log(err);
+    })
 });
 
 router.use('/files', file_r);
