@@ -1,5 +1,3 @@
-require ( 'newrelic'); // production monitoring system (heroku)
-
 //--* NODE EXPRESS SERVER MAIN *--//
 const express = require('express');
 const app = express();

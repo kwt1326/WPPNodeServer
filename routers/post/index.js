@@ -455,7 +455,8 @@ router.get('/archive', function(req,res,next)
     db_post.findAll({
         attributes: [
             'content', 'hashtag', 'title', 
-            'guid', 'views', 'hearts', 'frontimg'
+            'guid', 'views', 'hearts', 'frontimg',
+            'createdAt'
         ],
         offset : ofs,
         limit : pageleng,
