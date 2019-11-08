@@ -171,8 +171,7 @@ router.get('/list', function(req,res,next)
         }
     }
 
-    console.log(where);
-    console.log(keyword);
+    console.log(`find keyword : ${search}`);
 
     const process = async () => 
     {

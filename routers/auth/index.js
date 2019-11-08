@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt-nodejs');
 const { verifyToken } = require('../passport/checklogin');
+const { verifyPassword } = require('../../middlewares/util');
 
 // routers
 const router = express.Router(); // INDEX ROUTER
@@ -115,35 +116,30 @@ router.patch('/cpw', async (req, res) => {
     const pw = req.query.pw;
     const pwCheck = req.query.pwCheck;
 
-    if(pw === pwCheck) {
+    console.log(pw + ' ' + pwCheck);
+
+    if(verifyPassword(pw) && (pw === pwCheck)) {
         const result = await bcrypt.compareSync(verifyCode, hashkey);
         if(result) {
             const data = verifyCode.split(process.env.EMAIL_AUTH_SECRET);
             const email = data[0];
-            let hashedPW = null;
-
-            console.log(verifyCode);
-            console.log(email);
 
             await bcrypt.genSalt(10, (err, salt) => {
                 if(err) {
                     res.status(403).send(err);
                 }
                 else {
-                    bcrypt.hash(verifyCode, salt, null, async (err, hash) => {
-                        hashedPW = hash;
+                    bcrypt.hash(pw, salt, null, (err, hash) => 
+                    {    
+                        db_user.update({ password : hash }, { where : {email : email} })
+                        .then(result => {
+                            res.send({result : result});
+                        })
+                        .catch(err => {
+                            res.status(403).send("invalid user");
+                        })            
                     });
                 }
-            })
-
-            console.log(hashedPW);
-
-            await db_user.update({ password : hashedPW }, { where : {email : email} })
-            .then(result => {
-                res.send({result : result});
-            })
-            .catch(err => {
-                res.status(403).send("invalid user");
             })
         }
     }
