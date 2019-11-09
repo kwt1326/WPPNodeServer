@@ -193,31 +193,6 @@ router.get('/list', function(req,res,next)
             order: [['createdAt', 'DESC']],
         })
         .then(result => {
-            // 작성자 추출 로직 ( 불필요 하여 주석 처리 )
-            // async function getrows () {
-            //     for(let i = 0 ; i < result.length ; ++i) {
-            //         await db_user.findOne({ where: { id: result[i].userId } })
-            //         .then(result_user => {
-            //             rows[i] = {
-            //                 content: result[i],
-            //                 writer: result_user.nickname
-            //             }
-            //         })
-            //     }    
-            // }
-
-            // async function send () {
-            //     await getrows();
-            //     res.send({
-            //         result: true,
-            //         ofs: row_count - (page * 10),
-            //         count: row_count,
-            //         rows: rows,
-            //     });        
-            // }
-
-            // send();
-
             res.send({
                 result: true,
                 ofs: row_count - (page * 10),
