@@ -12,10 +12,6 @@ Live Url : https://www.aquaclub.club // 도메인
 
 데이터베이스 : mysql (cleardb cloud service)
 
-글쓰기 에디터 : quill
-
-자기소개 창 사용 라이브러리 : Three.js
-
 배포 : 서버 - heroku 프론트 - netlify
 
 미디어 저장 시스템 : cloudinary cloud service (aws s3 와 비슷)
