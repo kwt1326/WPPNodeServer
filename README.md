@@ -2,7 +2,7 @@
 
 # Host by Heroku 
 
-Live Url : https://www.aquaclub.club
+Live Url : https://www.aquaclub.club // 도메인 
 
 로그인 전략 : passport-facebook, google, local
 
